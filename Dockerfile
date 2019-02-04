@@ -5,24 +5,18 @@ RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \ 
-    sudo apt-get install zulu-7 zulu-9 zulu-10;
+    sudo apt-get install zulu-7 zulu-9 zulu-10 zulu-11;
 
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
+ENV JAVA_11_HOME=/usr/lib/jvm/zulu-11-amd64
 
-RUN set -eux; \
-    wget -q -O /tmp/openjdk.tar.gz https://download.java.net/java/ga/jdk11/openjdk-11_linux-x64_bin.tar.gz; \
-    sudo tar -xvf /tmp/openjdk.tar.gz -C /usr/lib/jvm/; \
-    rm -rf /tmp/openjdk.tar.gz;
-
-ENV JAVA_11_HOME=/usr/lib/jvm/jdk-11
-
-ENV JAVA_VERSION 1.8.0_sr5fp22
+ENV JAVA_VERSION 1.8.0_sr5fp27
 
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr5fp27; \
-    SUM='5be5205ef921b9269bd7f84cf93322aeac2dbcf08536fdf38b1dd2036f8911b9'; \
+    SUM='c590c9a119f8d3d256c21b7e4c9d679f35bc5dd6cf838b57e1327ac83f7840ad'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
