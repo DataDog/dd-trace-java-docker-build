@@ -21,7 +21,7 @@ ENV JAVA_11_HOME=/usr/lib/jvm/jdk-11
 ENV JAVA_VERSION 1.8.0_sr5fp22
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr5fp22; \
+    JAVA_VERSION=1.8.0_sr5fp27; \
     SUM='5be5205ef921b9269bd7f84cf93322aeac2dbcf08536fdf38b1dd2036f8911b9'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
