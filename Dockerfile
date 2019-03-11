@@ -12,11 +12,11 @@ ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/lib/jvm/zulu-11-amd64
 
-ENV JAVA_VERSION 1.8.0_sr5fp27
+ENV JAVA_VERSION 1.8.0_sr5fp30
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr5fp27; \
-    SUM='c590c9a119f8d3d256c21b7e4c9d679f35bc5dd6cf838b57e1327ac83f7840ad'; \
+    JAVA_VERSION=1.8.0_sr5fp30; \
+    SUM='97a6a92fe1303b82888cde206c38434a1c04c1b758cdf82c394de9252292fb5c'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
