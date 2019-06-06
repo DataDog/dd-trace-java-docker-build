@@ -4,7 +4,8 @@ FROM circleci/openjdk:8
 RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
-    sudo apt-get update; \ 
+    sudo apt-get update; \
+    sudo apt-get dist-upgrade; \
     sudo apt-get install socat zulu-7 zulu-9 zulu-10 zulu-11;
 
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
@@ -34,6 +35,8 @@ RUN set -eux; \
 	rm -f /tmp/ibm-java.bin;
 
 RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
+
+RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_IBM8_HOME=/opt/ibm/java/jre \
     IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
