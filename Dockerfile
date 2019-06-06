@@ -6,12 +6,13 @@ RUN set -eux; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
-    sudo apt-get install socat zulu-7 zulu-9 zulu-10 zulu-11;
+    sudo apt-get install socat zulu-7 zulu-9 zulu-10 zulu-11 zulu-12;
 
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/lib/jvm/zulu-11-amd64
+ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 
 ENV JAVA_VERSION 1.8.0_sr5fp36
 
