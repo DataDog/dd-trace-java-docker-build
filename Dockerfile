@@ -19,7 +19,7 @@ RUN sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
-ENV JAVA_11_HOME=/usr/lib/jvm/zulu-11-amd64
+ENV JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 
 ENV JAVA_VERSION 1.8.0_sr5fp36
