@@ -1,20 +1,17 @@
 
-FROM circleci/openjdk:8
+FROM circleci/openjdk:11
 
 RUN set -eux; \
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9; \
-    echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
-    sudo apt-get install socat zulu-7 zulu-9 zulu-10 zulu-11 zulu-12;
+    sudo apt-get install apt-transport-https socat; \
+    sudo apt-get install openjdk-8-jdk
 
-ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
-ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
-ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
-ENV JAVA_11_HOME=/usr/lib/jvm/zulu-11-amd64
-ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
-
-ENV JAVA_VERSION 1.8.0_sr5fp36
+RUN set -eux; \
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
+    echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
+    sudo apt-get update; \
+    sudo apt-get install zulu-7 zulu-9 zulu-10 zulu-11 zulu-12;
 
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr5fp36; \
@@ -41,3 +38,18 @@ RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_IBM8_HOME=/opt/ibm/java/jre \
     IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
+
+#Set some odd looking variables, since their default values are wrong and it is unclear how they are used
+ENV JAVA_DEBIAN_VERSION=unused
+ENV JAVA_VERSION=unused
+
+# Make java8 a default jvm
+RUN sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+
+ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
+ENV JAVA_8_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
+ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
+ENV JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
+ENV JAVA_HOME=${JAVA_8_HOME}
