@@ -8,7 +8,7 @@ RUN set -eux; \
     sudo apt-get install openjdk-8-jdk
 
 RUN set -eux; \
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9; \
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \
     sudo apt-get install zulu-7 zulu-9 zulu-10 zulu-11 zulu-12;
