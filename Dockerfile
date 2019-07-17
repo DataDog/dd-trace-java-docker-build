@@ -1,6 +1,8 @@
 
 FROM circleci/openjdk:11
 
+RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
+
 RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
