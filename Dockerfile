@@ -5,6 +5,7 @@ RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
     sudo apt-get install apt-transport-https socat; \
+    sudo apt-get install vim less debian-goodies; \
     sudo apt-get install openjdk-8-jdk
 
 RUN set -eux; \
