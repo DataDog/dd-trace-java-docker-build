@@ -17,8 +17,8 @@ RUN set -eux; \
     sudo apt-get install zulu-7 zulu-8 zulu-9 zulu-10 zulu-11 zulu-12 zulu-13;
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr6fp5; \
-    SUM='a640a2fbdb3cef7faa68f9349060ca5f7ce403ca351c599f6bdd28ba0b9cfd8b'; \
+    JAVA_VERSION=1.8.0_sr6fp6; \
+    SUM='761a91dc6e50667675eb6857e80fb1b8faa28c4b018331737eae4d1d3dc7c491'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
