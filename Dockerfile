@@ -14,11 +14,11 @@ RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \
-    sudo apt-get install zulu-7 zulu-8 zulu-9 zulu-10 zulu-11 zulu-12 zulu-13;
+    sudo apt-get install zulu-7 zulu-8 zulu-9 zulu-10 zulu-11 zulu-12 zulu-13 zulu-14;
 
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr6fp6; \
-    SUM='761a91dc6e50667675eb6857e80fb1b8faa28c4b018331737eae4d1d3dc7c491'; \
+    SUM='c1fd9c8ad1cf5e93dd6dfb70a04d41d33e6b554fda314841a6a9443b15317be8'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
@@ -56,6 +56,7 @@ ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/zulu-13-amd64
+ENV JAVA_14_HOME=/usr/lib/jvm/zulu-14-amd64
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu-8-amd64
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu-11-amd64
