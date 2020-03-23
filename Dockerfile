@@ -56,7 +56,7 @@ ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/zulu-13-amd64
-ENV JAVA_13_HOME=/usr/lib/jvm/zulu-14-amd64
+ENV JAVA_14_HOME=/usr/lib/jvm/zulu-14-amd64
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu-8-amd64
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu-11-amd64
