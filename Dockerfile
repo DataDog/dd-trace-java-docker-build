@@ -7,8 +7,15 @@ RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
     sudo apt-get install apt-transport-https socat; \
-    sudo apt-get install vim less debian-goodies; \
-    sudo apt-get install openjdk-8-jdk
+    sudo apt-get install vim less debian-goodies;
+
+# Buster doesn't ship java8 so use one from adoptopenjdk
+RUN set -eux; \
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x8ac3b29174885c03; \
+    . /etc/os-release; \
+    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/adoptopenjdk.list; \
+    sudo apt-get update; \
+    sudo apt-get install adoptopenjdk-8-hotspot;
 
 RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
