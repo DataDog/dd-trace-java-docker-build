@@ -1,8 +1,9 @@
-
+# Build from circleci image that uses current debian
 FROM circleci/openjdk:11.0.7-buster
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
+# Install some common useful things
 RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
@@ -17,6 +18,7 @@ RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get install adoptopenjdk-8-hotspot;
 
+# Install zulu jvms
 RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
@@ -56,6 +58,7 @@ ENV JAVA_VERSION=unused
 # Make java8 a default jvm
 RUN sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
 
+# Setup environment variables to point to all jvms we have
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
 ENV JAVA_8_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
