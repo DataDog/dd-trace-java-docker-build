@@ -56,11 +56,11 @@ ENV JAVA_DEBIAN_VERSION=unused
 ENV JAVA_VERSION=unused
 
 # Make java8 a default jvm
-RUN sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+RUN sudo update-java-alternatives -s adoptopenjdk-8-hotspot-amd64
 
 # Setup environment variables to point to all jvms we have
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
-ENV JAVA_8_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
