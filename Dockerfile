@@ -1,15 +1,24 @@
-
-FROM circleci/openjdk:11
+# Build from circleci image that uses current debian
+FROM circleci/openjdk:11.0.7-buster
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
+# Install some common useful things
 RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
     sudo apt-get install apt-transport-https socat; \
-    sudo apt-get install vim less debian-goodies; \
-    sudo apt-get install openjdk-8-jdk
+    sudo apt-get install vim less debian-goodies;
 
+# Buster doesn't ship java8 so use one from adoptopenjdk
+RUN set -eux; \
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x8ac3b29174885c03; \
+    . /etc/os-release; \
+    echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/adoptopenjdk.list; \
+    sudo apt-get update; \
+    sudo apt-get install adoptopenjdk-8-hotspot;
+
+# Install zulu jvms
 RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
@@ -17,8 +26,8 @@ RUN set -eux; \
     sudo apt-get install zulu-7 zulu-8 zulu-9 zulu-10 zulu-11 zulu-12 zulu-13 zulu-14;
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr6fp6; \
-    SUM='c1fd9c8ad1cf5e93dd6dfb70a04d41d33e6b554fda314841a6a9443b15317be8'; \
+    JAVA_VERSION=1.8.0_sr6fp7; \
+    SUM='3da063eb0142fd317ae8d2b72f07bcde1c3a4909c107f3fd39c297749f603ef9'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
@@ -47,10 +56,11 @@ ENV JAVA_DEBIAN_VERSION=unused
 ENV JAVA_VERSION=unused
 
 # Make java8 a default jvm
-RUN sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+RUN sudo update-java-alternatives -s adoptopenjdk-8-hotspot-amd64
 
+# Setup environment variables to point to all jvms we have
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
-ENV JAVA_8_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk-amd64
