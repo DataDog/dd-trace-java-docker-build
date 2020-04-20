@@ -1,5 +1,5 @@
 
-FROM circleci/openjdk:11
+FROM circleci/openjdk:11.0.7-buster
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
