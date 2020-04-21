@@ -16,7 +16,7 @@ RUN set -eux; \
     . /etc/os-release; \
     echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/adoptopenjdk.list; \
     sudo apt-get update; \
-    sudo apt-get install adoptopenjdk-8-hotspot;
+    sudo apt-get install adoptopenjdk-8-hotspot adoptopenjdk-13-hotspot adoptopenjdk-14-hotspot;
 
 # Install zulu jvms
 RUN set -eux; \
@@ -64,11 +64,13 @@ ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/local/openjdk-11
-ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
-ENV JAVA_13_HOME=/usr/lib/jvm/zulu-13-amd64
-ENV JAVA_14_HOME=/usr/lib/jvm/zulu-14-amd64
+ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd6
+ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
+ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu-8-amd64
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu-11-amd64
+ENV JAVA_ZULU13_HOME=/usr/lib/jvm/zulu-13-amd64
+ENV JAVA_ZULU14_HOME=/usr/lib/jvm/zulu-14-amd64
 
 ENV JAVA_HOME=${JAVA_8_HOME}
