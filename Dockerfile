@@ -64,7 +64,7 @@ ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
 ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
 ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/local/openjdk-11
-ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd6
+ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
 ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
 
