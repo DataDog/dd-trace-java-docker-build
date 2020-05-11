@@ -44,6 +44,11 @@ RUN set -eux; \
     rm -f /tmp/index.yml; \
 	rm -f /tmp/ibm-java.bin;
 
+# Install aws cli
+RUN set -eux; \
+    sudo apt install python3-pip; \
+    pip3 install awscli;
+
 RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
