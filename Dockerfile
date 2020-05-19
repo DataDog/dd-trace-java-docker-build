@@ -23,11 +23,11 @@ RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \
-    sudo apt-get install zulu-7 zulu-8 zulu-9 zulu-10 zulu-11 zulu-12 zulu-13 zulu-14;
+    sudo apt-get install zulu-7 zulu-8 zulu-11 zulu-12 zulu-13 zulu-14;
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr6fp7; \
-    SUM='3da063eb0142fd317ae8d2b72f07bcde1c3a4909c107f3fd39c297749f603ef9'; \
+    JAVA_VERSION=1.8.0_sr6fp10; \
+    SUM='1a330b630b173fcecaeb730494612c1a28f7b73ea6a9b7eb41f29a9136ef3863'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
@@ -66,8 +66,6 @@ RUN sudo update-java-alternatives -s adoptopenjdk-8-hotspot-amd64
 # Setup environment variables to point to all jvms we have
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
 ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
-ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
-ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/local/openjdk-11
 ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
