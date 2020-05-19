@@ -23,7 +23,7 @@ RUN set -eux; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
     echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
     sudo apt-get update; \
-    sudo apt-get install zulu-7 zulu-8 zulu-9 zulu-10 zulu-11 zulu-12 zulu-13 zulu-14;
+    sudo apt-get install zulu-7 zulu-8 zulu-11 zulu-12 zulu-13 zulu-14;
 
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr6fp7; \
@@ -61,8 +61,6 @@ RUN sudo update-java-alternatives -s adoptopenjdk-8-hotspot-amd64
 # Setup environment variables to point to all jvms we have
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
 ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
-ENV JAVA_9_HOME=/usr/lib/jvm/zulu-9-amd64
-ENV JAVA_10_HOME=/usr/lib/jvm/zulu-10-amd64
 ENV JAVA_11_HOME=/usr/local/openjdk-11
 ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
