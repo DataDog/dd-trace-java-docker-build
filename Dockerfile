@@ -20,10 +20,14 @@ RUN set -eux; \
 
 # Install zulu jvms
 RUN set -eux; \
+    ZULU_REPO_DEB=https://cdn.azul.com/zulu/bin/zulu-repo_1.0.0-2_all.deb; \
+    SUM='b8d11979d9b1959b5ff621f1021ff0dba40c7d47d948ae6ec4a4bbde98cf71f5'; \
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xb1998361219bd9c9; \
-    echo 'deb http://repos.azulsystems.com/debian stable main' | sudo tee -a /etc/apt/sources.list.d/zulu.list; \
+    wget -q -O /tmp/zulu-repo.deb ${ZULU_REPO_DEB}; \
+    echo "${SUM} /tmp/zulu-repo.deb" | sha256sum -c -; \
+    sudo dpkg -i /tmp/zulu-repo.deb; \
     sudo apt-get update; \
-    sudo apt-get install zulu-7 zulu-8 zulu-11 zulu-12 zulu-13 zulu-14;
+    sudo apt-get install zulu7 zulu8 zulu11 zulu13 zulu15;
 
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr6fp15; \
@@ -72,9 +76,9 @@ ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
 ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
 ENV JAVA_15_HOME=/usr/lib/jvm/adoptopenjdk-15-hotspot-amd64
 
-ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu-8-amd64
-ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu-11-amd64
-ENV JAVA_ZULU13_HOME=/usr/lib/jvm/zulu-13-amd64
-ENV JAVA_ZULU14_HOME=/usr/lib/jvm/zulu-14-amd64
+ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
+ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
+ENV JAVA_ZULU13_HOME=/usr/lib/jvm/zulu13
+ENV JAVA_ZULU15_HOME=/usr/lib/jvm/zulu15
 
 ENV JAVA_HOME=${JAVA_8_HOME}
