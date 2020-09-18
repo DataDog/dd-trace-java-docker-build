@@ -68,10 +68,9 @@ ENV JAVA_VERSION=unused
 RUN sudo update-java-alternatives -s adoptopenjdk-8-hotspot-amd64
 
 # Setup environment variables to point to all jvms we have
-ENV JAVA_7_HOME=/usr/lib/jvm/zulu-7-amd64
+ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
 ENV JAVA_8_HOME=/usr/lib/jvm/adoptopenjdk-8-hotspot-amd64
 ENV JAVA_11_HOME=/usr/local/openjdk-11
-ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
 ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
 ENV JAVA_15_HOME=/usr/lib/jvm/adoptopenjdk-15-hotspot-amd64
