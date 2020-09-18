@@ -1,5 +1,5 @@
 # Build from circleci image that uses current debian
-FROM circleci/openjdk:11.0.7-buster
+FROM circleci/openjdk:11.0.8-buster
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
@@ -16,7 +16,7 @@ RUN set -eux; \
     . /etc/os-release; \
     echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/adoptopenjdk.list; \
     sudo apt-get update; \
-    sudo apt-get install adoptopenjdk-8-hotspot adoptopenjdk-13-hotspot adoptopenjdk-14-hotspot;
+    sudo apt-get install adoptopenjdk-8-hotspot adoptopenjdk-13-hotspot adoptopenjdk-14-hotspot adoptopenjdk-15-hotspot;
 
 # Install zulu jvms
 RUN set -eux; \
@@ -26,8 +26,8 @@ RUN set -eux; \
     sudo apt-get install zulu-7 zulu-8 zulu-11 zulu-12 zulu-13 zulu-14;
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr6fp10; \
-    SUM='1a330b630b173fcecaeb730494612c1a28f7b73ea6a9b7eb41f29a9136ef3863'; \
+    JAVA_VERSION=1.8.0_sr6fp15; \
+    SUM='1770fc44e0061a72ab9cfc47fb9a1934b17581fee77a3cc32e83b4bee0084256'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
     BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
@@ -70,6 +70,7 @@ ENV JAVA_11_HOME=/usr/local/openjdk-11
 ENV JAVA_12_HOME=/usr/lib/jvm/zulu-12-amd64
 ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
 ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
+ENV JAVA_15_HOME=/usr/lib/jvm/adoptopenjdk-15-hotspot-amd64
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu-8-amd64
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu-11-amd64
