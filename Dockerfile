@@ -29,12 +29,6 @@ RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get install zulu7 zulu8 zulu11 zulu13 zulu15;
 
-# Install oracle jvm
-RUN set -eux; \
-    wget -q -O /tmp/oracle-jdk8.tar.gz -c --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u281-b09/89d678f2be164786b292527658ca1605/jdk-8u281-linux-x64.tar.gz"; \
-    sudo tar xzf /tmp/oracle-jdk8.tar.gz -C /usr/lib/jvm/; \
-    sudo mv /usr/lib/jvm/jdk1.8.0_281 /usr/lib/jvm/oracle8;
-
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr6fp15; \
     SUM='1770fc44e0061a72ab9cfc47fb9a1934b17581fee77a3cc32e83b4bee0084256'; \
@@ -85,7 +79,5 @@ ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
 ENV JAVA_ZULU13_HOME=/usr/lib/jvm/zulu13
 ENV JAVA_ZULU15_HOME=/usr/lib/jvm/zulu15
-
-ENV JAVA_ORACLE8_HOME=/usr/lib/jvm/oracle8
 
 ENV JAVA_HOME=${JAVA_8_HOME}
