@@ -30,8 +30,10 @@ RUN set -eux; \
     sudo apt-get install zulu7 zulu8 zulu11 zulu13 zulu15;
 
 # Install oracle jvm
+# Oracle is periodically removing older versions from the downloads - when that happens one needs to go to 
+# https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html to figure out the correct new link
 RUN set -eux; \
-    wget -q -O /tmp/oracle-jdk8.tar.gz -c --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u281-b09/89d678f2be164786b292527658ca1605/jdk-8u281-linux-x64.tar.gz"; \
+    wget -q -O /tmp/oracle-jdk8.tar.gz -c --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn/java/jdk/8u291-b10/d7fc238d0cbf4b0dac67be84580cfb4b/jdk-8u291-linux-x64.tar.gz"; \
     sudo tar xzf /tmp/oracle-jdk8.tar.gz -C /usr/lib/jvm/; \
     sudo mv /usr/lib/jvm/jdk1.8.0_281 /usr/lib/jvm/oracle8;
 
