@@ -37,7 +37,7 @@ RUN set -eux; \
 RUN set -eux; \
     wget -q -O /tmp/oracle-jdk8.tar.gz -c --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u291-b10/d7fc238d0cbf4b0dac67be84580cfb4b/jdk-8u291-linux-x64.tar.gz"; \
     sudo tar xzf /tmp/oracle-jdk8.tar.gz -C /usr/lib/jvm/; \
-    sudo mv /usr/lib/jvm/jdk1.8.0_281 /usr/lib/jvm/oracle8;
+    sudo mv /usr/lib/jvm/jdk1.8.0_291 /usr/lib/jvm/oracle8;
 
 RUN set -eux; \
     JAVA_VERSION=1.8.0_sr6fp30; \
