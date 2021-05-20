@@ -66,7 +66,7 @@ RUN set -eux; \
 # Install datadog-ci
 RUN set -eux; \
     sudo apt install nodejs npm; \
-    npm install -g @datadog/datadog-ci;
+    sudo npm install -g @datadog/datadog-ci;
 
 RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
 
