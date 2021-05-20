@@ -63,6 +63,11 @@ RUN set -eux; \
     sudo apt install python3-pip; \
     pip3 install awscli;
 
+# Install datadog-ci
+RUN set -eux; \
+    sudo apt install nodejs npm; \
+    sudo npm install -g @datadog/datadog-ci;
+
 RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
