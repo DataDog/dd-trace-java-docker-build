@@ -16,7 +16,7 @@ RUN set -eux; \
     . /etc/os-release; \
     echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ $VERSION_CODENAME main" | sudo tee -a /etc/apt/sources.list.d/adoptopenjdk.list; \
     sudo apt-get update; \
-    sudo apt-get install adoptopenjdk-8-hotspot adoptopenjdk-13-hotspot adoptopenjdk-14-hotspot adoptopenjdk-15-hotspot;
+    sudo apt-get install adoptopenjdk-8-hotspot adoptopenjdk-13-hotspot adoptopenjdk-14-hotspot adoptopenjdk-15-hotspot adoptopenjdk-16-hotspot;
 
 # Install zulu jvms
 RUN set -eux; \
@@ -89,6 +89,7 @@ ENV JAVA_11_HOME=/usr/local/openjdk-11
 ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
 ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
 ENV JAVA_15_HOME=/usr/lib/jvm/adoptopenjdk-15-hotspot-amd64
+ENV JAVA_16_HOME=/usr/lib/jvm/adoptopenjdk-16-hotspot-amd64
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
