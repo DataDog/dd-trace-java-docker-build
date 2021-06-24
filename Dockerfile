@@ -30,7 +30,7 @@ RUN set -eux; \
     sudo apt-get install zulu7 zulu8 zulu11 zulu13 zulu15;
 
 # Install oracle jvm
-# Oracle is periodically removing older versions from the downloads - when that happens one needs to go to 
+# Oracle is periodically removing older versions from the downloads - when that happens one needs to go to
 # https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html to figure out the correct new link.
 # !IMPORTANT! Replace '/otn/' with '/otn-pub/' to work around Oracle login issue
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
@@ -66,7 +66,7 @@ RUN set -eux; \
 # Install datadog-ci
 RUN set -eux; \
     sudo apt install nodejs npm; \
-    sudo npm install -g @datadog/datadog-ci@0.13.2;
+    sudo npm install -g @datadog/datadog-ci@0.13.6-alpha;
 
 RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
 
