@@ -72,9 +72,8 @@ RUN set -eux; \
     pip3 install awscli;
 
 # Install datadog-ci
-RUN set -eux; \
-    sudo apt install nodejs npm; \
-    sudo npm install -g @datadog/datadog-ci@0.13.6-alpha;
+RUN sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v1.3.0-alpha/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" \
+    && sudo chmod +x /usr/local/bin/datadog-ci
 
 RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
 
