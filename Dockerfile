@@ -35,15 +35,16 @@ RUN set -eux; \
 # !IMPORTANT! Replace '/otn/' with '/otn-pub/' to work around Oracle login issue
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN set -eux; \
-    wget -q -O /tmp/oracle-jdk8.tar.gz -c --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u291-b10/d7fc238d0cbf4b0dac67be84580cfb4b/jdk-8u291-linux-x64.tar.gz"; \
+    wget -q -O /tmp/oracle-jdk8.tar.gz -c --no-cookies --no-check-certificate --header "Cookie: oraclelicense=accept-securebackup-cookie" "https://download.oracle.com/otn-pub/java/jdk/8u321-b07/df5ad55fdd604472a86a45a217032c7d/jdk-8u321-linux-x64.tar.gz"; \
     sudo tar xzf /tmp/oracle-jdk8.tar.gz -C /usr/lib/jvm/; \
-    sudo mv /usr/lib/jvm/jdk1.8.0_291 /usr/lib/jvm/oracle8;
+    sudo mv /usr/lib/jvm/jdk1.8.0_321 /usr/lib/jvm/oracle8; \
+    rm -f /tmp/oracle-jdk8.tar.gz
 
 RUN set -eux; \
-    JAVA_VERSION=1.8.0_sr6fp30; \
-    SUM='afd31dea9c65fdfef664ac93140115f7c0746445bbe24fc7c62891236d28689d'; \
+    JAVA_VERSION='8.0.7.6'; \
+    SUM='9261e658294baf2367802c07b6b6b8208a453556ca4189839661a54bab40f730'; \
     YML_FILE='sdk/linux/x86_64/index.yml'; \
-    BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta"; \
+    BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/8.0"; \
     wget -q -O /tmp/index.yml ${BASE_URL}/${YML_FILE}; \
     JAVA_URL=$(sed -n '/^'${JAVA_VERSION}:'/{n;s/\s*uri:\s//p}'< /tmp/index.yml); \
     wget -q -O /tmp/ibm-java.bin ${JAVA_URL}; \
@@ -56,7 +57,14 @@ RUN set -eux; \
     sudo /tmp/ibm-java.bin -i silent -f /tmp/response.properties; \
     rm -f /tmp/response.properties; \
     rm -f /tmp/index.yml; \
-	rm -f /tmp/ibm-java.bin;
+    rm -f /tmp/ibm-java.bin;
+
+# Install adoptium jvms
+RUN set -eux; \
+    wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | sudo tee /usr/share/keyrings/adoptium.asc ; \
+    echo "deb [signed-by=/usr/share/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | sudo tee /etc/apt/sources.list.d/adoptium.list ; \
+    sudo apt-get update; \
+    sudo apt-get install temurin-17-jdk;
 
 # Install aws cli
 RUN set -eux; \
@@ -90,6 +98,7 @@ ENV JAVA_13_HOME=/usr/lib/jvm/adoptopenjdk-13-hotspot-amd64
 ENV JAVA_14_HOME=/usr/lib/jvm/adoptopenjdk-14-hotspot-amd64
 ENV JAVA_15_HOME=/usr/lib/jvm/adoptopenjdk-15-hotspot-amd64
 ENV JAVA_16_HOME=/usr/lib/jvm/adoptopenjdk-16-hotspot-amd64
+ENV JAVA_17_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
