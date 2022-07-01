@@ -1,4 +1,13 @@
 # Build from circleci image that uses current debian
+FROM debian:buster AS oracle8
+
+RUN apt-get -y update && apt-get -y install curl
+
+# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
+RUN set -eux; \
+    mkdir -p /usr/lib/jvm/oracle8; \
+    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246242_165374ff4ea84ef0bbd821706e29b123" | tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+
 FROM circleci/openjdk:11.0.8-buster
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
@@ -30,11 +39,7 @@ COPY --from=ibm-semeru-runtimes:open-8-jdk-focal /opt/java/openjdk /usr/lib/jvm/
 COPY --from=ibm-semeru-runtimes:open-11-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm11
 COPY --from=ibm-semeru-runtimes:open-17-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
 
-# Install oracle jvm
-# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
-RUN set -eux; \
-    sudo mkdir -p /usr/lib/jvm/oracle8; \
-    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246242_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
 # Install aws cli
 RUN set -eux; \
