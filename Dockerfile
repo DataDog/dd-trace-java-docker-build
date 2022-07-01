@@ -1,14 +1,15 @@
 # Build from circleci image that uses current debian
-FROM debian:buster AS oracle8
+FROM cimg/base:edge-20.04 AS oracle8
 
-RUN apt-get -y update && apt-get -y install curl
+RUN sudo apt-get -y update && sudo apt-get -y install curl
 
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN set -eux; \
-    mkdir -p /usr/lib/jvm/oracle8; \
-    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246242_165374ff4ea84ef0bbd821706e29b123" | tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+    sudo mkdir -p /usr/lib/jvm/oracle8; \
+    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246242_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
-FROM circleci/openjdk:11.0.8-buster
+# CircleCI Base Image with Ubuntu 20.04.3 LTS
+FROM cimg/base:edge-20.04
 
 RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
