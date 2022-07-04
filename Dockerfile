@@ -6,7 +6,7 @@ RUN sudo apt-get -y update && sudo apt-get -y install curl
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN set -eux; \
     sudo mkdir -p /usr/lib/jvm/oracle8; \
-    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246242_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
 # CircleCI Base Image with Ubuntu 20.04.3 LTS
 FROM cimg/base:edge-20.04
@@ -30,11 +30,11 @@ COPY --from=openjdk:17-jdk-buster /usr/local/openjdk-17 /usr/lib/jvm/openjdk17
 COPY --from=openjdk:18-jdk-buster /usr/local/openjdk-18 /usr/lib/jvm/openjdk18
 COPY --from=openjdk:19-jdk-buster /usr/local/openjdk-19 /usr/lib/jvm/openjdk19
 
-COPY --from=azul/zulu-openjdk-debian:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
-COPY --from=azul/zulu-openjdk-debian:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
-COPY --from=azul/zulu-openjdk-debian:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
-COPY --from=azul/zulu-openjdk-debian:13 /usr/lib/jvm/zulu13 /usr/lib/jvm/zulu13
-COPY --from=azul/zulu-openjdk-debian:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
+COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
+COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
+COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
+COPY --from=azul/zulu-openjdk:13 /usr/lib/jvm/zulu13 /usr/lib/jvm/zulu13
+COPY --from=azul/zulu-openjdk:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 
