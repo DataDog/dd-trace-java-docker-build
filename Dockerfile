@@ -36,9 +36,7 @@ COPY --from=azul/zulu-openjdk-debian:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 COPY --from=azul/zulu-openjdk-debian:13 /usr/lib/jvm/zulu13 /usr/lib/jvm/zulu13
 COPY --from=azul/zulu-openjdk-debian:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
 
-COPY --from=ibm-semeru-runtimes:open-8-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm8
-COPY --from=ibm-semeru-runtimes:open-11-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm11
-COPY --from=ibm-semeru-runtimes:open-17-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
+COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
