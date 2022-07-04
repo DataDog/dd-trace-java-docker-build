@@ -62,7 +62,7 @@ ENV JAVA_VERSION=unused
 
 # Setup environment variables to point to all jvms we have
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
-ENV JAVA_8_HOME=/usr/lib/jvm/openjdk8
+ENV JAVA_8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_11_HOME=/usr/lib/jvm/openjdk11
 ENV JAVA_13_HOME=/usr/lib/jvm/openjdk13
 ENV JAVA_14_HOME=/usr/lib/jvm/openjdk14
