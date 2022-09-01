@@ -11,15 +11,6 @@ RUN set -eux; \
 # CircleCI Base Image with Ubuntu 20.04.3 LTS
 FROM cimg/base:edge-20.04
 
-RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
-
-# Install some common useful things
-RUN set -eux; \
-    sudo apt-get update; \
-    sudo apt-get dist-upgrade; \
-    sudo apt-get install apt-transport-https socat; \
-    sudo apt-get install vim less debian-goodies;
-
 COPY --from=openjdk:8-jdk-buster /usr/local/openjdk-8 /usr/lib/jvm/openjdk8
 COPY --from=openjdk:11-jdk-buster /usr/local/openjdk-11 /usr/lib/jvm/openjdk11
 COPY --from=openjdk:13-jdk-buster /usr/java/openjdk-13 /usr/lib/jvm/openjdk13
@@ -39,6 +30,15 @@ COPY --from=azul/zulu-openjdk:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
+
+RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
+
+# Install some common useful things
+RUN set -eux; \
+    sudo apt-get update; \
+    sudo apt-get dist-upgrade; \
+    sudo apt-get install apt-transport-https socat; \
+    sudo apt-get install vim less debian-goodies;
 
 # Install aws cli
 RUN set -eux; \
