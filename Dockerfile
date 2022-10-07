@@ -28,6 +28,8 @@ COPY --from=azul/zulu-openjdk:13 /usr/lib/jvm/zulu13 /usr/lib/jvm/zulu13
 COPY --from=azul/zulu-openjdk:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
+COPY --from=ibmjava:11-jdk /opt/ibm/java /usr/lib/jvm/ibm11
+
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
