@@ -29,7 +29,7 @@ COPY --from=azul/zulu-openjdk:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 COPY --from=ibmjava:11-jdk /opt/ibm/java /usr/lib/jvm/ibm11
-
+COPY --from=ibm-semeru-runtimes:open-17.0.4.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
