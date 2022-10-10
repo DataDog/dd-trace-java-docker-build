@@ -13,19 +13,12 @@ FROM cimg/base:edge-20.04
 
 COPY --from=openjdk:8-jdk-buster /usr/local/openjdk-8 /usr/lib/jvm/openjdk8
 COPY --from=openjdk:11-jdk-buster /usr/local/openjdk-11 /usr/lib/jvm/openjdk11
-COPY --from=openjdk:13-jdk-buster /usr/java/openjdk-13 /usr/lib/jvm/openjdk13
-COPY --from=openjdk:14-jdk-buster /usr/local/openjdk-14 /usr/lib/jvm/openjdk14
-COPY --from=openjdk:15-jdk-buster /usr/local/openjdk-15 /usr/lib/jvm/openjdk15
-COPY --from=openjdk:16-jdk-buster /usr/local/openjdk-16 /usr/lib/jvm/openjdk16
 COPY --from=openjdk:17-jdk-buster /usr/local/openjdk-17 /usr/lib/jvm/openjdk17
-COPY --from=openjdk:18-jdk-buster /usr/local/openjdk-18 /usr/lib/jvm/openjdk18
 COPY --from=openjdk:19-jdk-buster /usr/local/openjdk-19 /usr/lib/jvm/openjdk19
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
-COPY --from=azul/zulu-openjdk:13 /usr/lib/jvm/zulu13 /usr/lib/jvm/zulu13
-COPY --from=azul/zulu-openjdk:15 /usr/lib/jvm/zulu15 /usr/lib/jvm/zulu15
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 COPY --from=ibmjava:11-jdk /opt/ibm/java /usr/lib/jvm/ibm11
@@ -67,16 +60,10 @@ ENV JAVA_VERSION=unused
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
 ENV JAVA_8_HOME=/usr/lib/jvm/openjdk8
 ENV JAVA_11_HOME=/usr/lib/jvm/openjdk11
-ENV JAVA_13_HOME=/usr/lib/jvm/openjdk13
-ENV JAVA_14_HOME=/usr/lib/jvm/openjdk14
-ENV JAVA_15_HOME=/usr/lib/jvm/openjdk15
-ENV JAVA_16_HOME=/usr/lib/jvm/openjdk16
 ENV JAVA_17_HOME=/usr/lib/jvm/openjdk17
 
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
-ENV JAVA_ZULU13_HOME=/usr/lib/jvm/zulu13
-ENV JAVA_ZULU15_HOME=/usr/lib/jvm/zulu15
 
 ENV JAVA_ORACLE8_HOME=/usr/lib/jvm/oracle8
 
