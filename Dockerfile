@@ -9,7 +9,7 @@ RUN set -eux; \
     curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
 # GraalVM with native image support
-FROM ghcr.io/graalvm/graalvm-ce:ol7-java11-22.2.0 AS graalvm-native-image-jdk11
+FROM ghcr.io/graalvm/graalvm-ce:ol8-java11-22.2.0 AS graalvm-native-image-jdk11
 RUN gu install native-image
 
 FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22.2.0 AS graalvm-native-image-jdk17
