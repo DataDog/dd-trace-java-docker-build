@@ -8,6 +8,10 @@ RUN set -eux; \
     sudo mkdir -p /usr/lib/jvm/oracle8; \
     curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
+# GraalVM with native image support
+FROM ghcr.io/graalvm/graalvm-ce:22.2.0 AS graalvm-native-image
+RUN gu install native-image
+
 # CircleCI Base Image with Ubuntu 20.04.3 LTS
 FROM cimg/base:edge-20.04
 
@@ -23,6 +27,8 @@ COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 COPY --from=ibmjava:11-jdk /opt/ibm/java /usr/lib/jvm/ibm11
 COPY --from=ibm-semeru-runtimes:open-17.0.4.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
+
+COPY --from=graalvm-native-image /opt/graalvm-ce-java17-22.2.0 /usr/lib/graalvm22-jdk17
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
