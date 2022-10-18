@@ -81,5 +81,8 @@ ENV JAVA_IBM8_HOME=/usr/lib/jvm/ibm8
 ENV JAVA_IBM11_HOME=/usr/lib/jvm/ibm11
 ENV JAVA_IBM17_HOME=/usr/lib/jvm/ibm17
 
+ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm22-jdk11
+ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm22-jdk17
+
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
