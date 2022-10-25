@@ -28,7 +28,7 @@ COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
-COPY --from=ibmjava:11-jdk /opt/ibm/java /usr/lib/jvm/ibm11
+COPY --from=ibm-semeru-runtimes:open-11.0.16.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm11
 COPY --from=ibm-semeru-runtimes:open-17.0.4.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
 
 COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22.2.0 /usr/lib/jvm/graalvm22-jdk11
