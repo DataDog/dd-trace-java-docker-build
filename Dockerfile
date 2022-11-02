@@ -31,6 +31,8 @@ COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 COPY --from=ibm-semeru-runtimes:open-11.0.16.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm11
 COPY --from=ibm-semeru-runtimes:open-17.0.4.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
 
+COPY --from=ibm-semeru-runtimes:open-8-jdk-focal /opt/java/openjdk /usr/lib/jvm/semeru8
+
 COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22.2.0 /usr/lib/jvm/graalvm22-jdk11
 COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22.2.0 /usr/lib/jvm/graalvm22-jdk17
 
@@ -80,6 +82,8 @@ ENV JAVA_ORACLE8_HOME=/usr/lib/jvm/oracle8
 ENV JAVA_IBM8_HOME=/usr/lib/jvm/ibm8
 ENV JAVA_IBM11_HOME=/usr/lib/jvm/ibm11
 ENV JAVA_IBM17_HOME=/usr/lib/jvm/ibm17
+
+ENV JAVA_SEMERU8_HOME=/usr/lib/jvm/semeru8
 
 ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm22-jdk11
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm22-jdk17
