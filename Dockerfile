@@ -18,6 +18,13 @@ RUN gu install native-image
 # CircleCI Base Image with Ubuntu 20.04.3 LTS
 FROM cimg/base:edge-20.04
 
+# Base image (cimg/base:edge-20.04) uses vulnerable yq version (4.27.5 with CVE-2022-27664)
+# Remove it and install a patched version (since 4.29.1)
+RUN sudo -- /bin/bash -exo pipefail -c 'rm /usr/local/bin/yq* && \
+    curl -sSL "https://github.com/mikefarah/yq/releases/download/v4.30.5/yq_linux_amd64.tar.gz" | \
+    tar -xz -C /usr/local/bin && \
+    mv /usr/local/bin/yq{_linux_amd64,}'
+
 COPY --from=openjdk:8-jdk-buster /usr/local/openjdk-8 /usr/lib/jvm/openjdk8
 COPY --from=openjdk:11-jdk-buster /usr/local/openjdk-11 /usr/lib/jvm/openjdk11
 COPY --from=openjdk:17-jdk-buster /usr/local/openjdk-17 /usr/lib/jvm/openjdk17
