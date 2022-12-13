@@ -1,5 +1,5 @@
 # Build from circleci image that uses current debian
-FROM cimg/base:edge-20.04 AS oracle8
+FROM cimg/base:edge-22.04 AS oracle8
 
 RUN sudo apt-get -y update && sudo apt-get -y install curl
 
@@ -9,21 +9,14 @@ RUN set -eux; \
     curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
 # GraalVM with native image support
-FROM ghcr.io/graalvm/graalvm-ce:ol8-java11-22.2.0 AS graalvm-native-image-jdk11
+FROM ghcr.io/graalvm/graalvm-ce:ol8-java11-22 AS graalvm-native-image-jdk11
 RUN gu install native-image
 
-FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22.2.0 AS graalvm-native-image-jdk17
+FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22 AS graalvm-native-image-jdk17
 RUN gu install native-image
 
-# CircleCI Base Image with Ubuntu 20.04.3 LTS
-FROM cimg/base:edge-20.04
-
-# Base image (cimg/base:edge-20.04) uses vulnerable yq version (4.27.5 with CVE-2022-27664)
-# Remove it and install a patched version (since 4.29.1)
-RUN sudo -- /bin/bash -exo pipefail -c 'rm /usr/local/bin/yq* && \
-    curl -sSL "https://github.com/mikefarah/yq/releases/download/v4.30.5/yq_linux_amd64.tar.gz" | \
-    tar -xz -C /usr/local/bin && \
-    mv /usr/local/bin/yq{_linux_amd64,}'
+# CircleCI Base Image with Ubuntu 22.04.3 LTS
+FROM cimg/base:edge-22.04
 
 COPY --from=openjdk:8-jdk-buster /usr/local/openjdk-8 /usr/lib/jvm/openjdk8
 COPY --from=openjdk:11-jdk-buster /usr/local/openjdk-11 /usr/lib/jvm/openjdk11
@@ -35,13 +28,13 @@ COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
-COPY --from=ibm-semeru-runtimes:open-11.0.16.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm11
-COPY --from=ibm-semeru-runtimes:open-17.0.4.1_1-jdk-focal /opt/java/openjdk /usr/lib/jvm/ibm17
+COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/ibm11
+COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/ibm17
 
-COPY --from=ibm-semeru-runtimes:open-8-jdk-focal /opt/java/openjdk /usr/lib/jvm/semeru8
+COPY --from=ibm-semeru-runtimes:open-8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru8
 
-COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22.2.0 /usr/lib/jvm/graalvm22-jdk11
-COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22.2.0 /usr/lib/jvm/graalvm22-jdk17
+COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22* /usr/lib/jvm/graalvm22-jdk11
+COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/graalvm22-jdk17
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
