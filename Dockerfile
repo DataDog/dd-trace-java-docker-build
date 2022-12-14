@@ -53,6 +53,12 @@ RUN set -eux; \
     sudo apt install python3-pip; \
     pip3 install awscli;
 
+# Install autoforward script
+COPY autoforward.py /usr/local/bin/autoforward
+RUN set -eux; \
+    sudo pip3 install requests requests-unixsocket; \
+    sudo chmod +x /usr/local/bin/autoforward
+
 # Install datadog-ci
 RUN sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v1.3.0-alpha/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" \
     && sudo chmod +x /usr/local/bin/datadog-ci
