@@ -18,14 +18,15 @@ RUN gu install native-image
 # CircleCI Base Image with Ubuntu 22.04.3 LTS
 FROM cimg/base:edge-22.04
 
-COPY --from=openjdk:8-jdk-buster /usr/local/openjdk-8 /usr/lib/jvm/openjdk8
-COPY --from=openjdk:11-jdk-buster /usr/local/openjdk-11 /usr/lib/jvm/openjdk11
-COPY --from=openjdk:17-jdk-buster /usr/local/openjdk-17 /usr/lib/jvm/openjdk17
-COPY --from=openjdk:19-jdk-buster /usr/local/openjdk-19 /usr/lib/jvm/openjdk19
+COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk8
+COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk11
+COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk17
+COPY --from=eclipse-temurin:19-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk19
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
+COPY --from=azul/zulu-openjdk:17 /usr/lib/jvm/zulu17 /usr/lib/jvm/zulu17
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/ibm11
