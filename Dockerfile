@@ -21,18 +21,15 @@ FROM cimg/base:edge-22.04
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk17
-COPY --from=eclipse-temurin:19-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk19
 
-COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
-COPY --from=azul/zulu-openjdk:17 /usr/lib/jvm/zulu17 /usr/lib/jvm/zulu17
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
-COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/ibm11
-COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/ibm17
 
 COPY --from=ibm-semeru-runtimes:open-8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru8
+COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru11
+COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru17
 
 COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22* /usr/lib/jvm/graalvm22-jdk11
 COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/graalvm22-jdk17
@@ -76,7 +73,6 @@ ENV JAVA_DEBIAN_VERSION=unused
 ENV JAVA_VERSION=unused
 
 # Setup environment variables to point to all jvms we have
-ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
 ENV JAVA_8_HOME=/usr/lib/jvm/openjdk8
 ENV JAVA_11_HOME=/usr/lib/jvm/openjdk11
 ENV JAVA_17_HOME=/usr/lib/jvm/openjdk17
@@ -87,10 +83,13 @@ ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
 ENV JAVA_ORACLE8_HOME=/usr/lib/jvm/oracle8
 
 ENV JAVA_IBM8_HOME=/usr/lib/jvm/ibm8
-ENV JAVA_IBM11_HOME=/usr/lib/jvm/ibm11
-ENV JAVA_IBM17_HOME=/usr/lib/jvm/ibm17
+# Temporarily set these aliases for backwards compatibility.
+ENV JAVA_IBM11_HOME=/usr/lib/jvm/semeru11
+ENV JAVA_IBM17_HOME=/usr/lib/jvm/semeru17
 
 ENV JAVA_SEMERU8_HOME=/usr/lib/jvm/semeru8
+ENV JAVA_SEMERU11_HOME=/usr/lib/jvm/semeru11
+ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
 
 ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm22-jdk11
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm22-jdk17
