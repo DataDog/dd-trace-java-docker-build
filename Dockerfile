@@ -40,9 +40,9 @@ COPY autoforward.py /usr/local/bin/autoforward
 
 RUN set -eux; \
     sudo apt-get update; \
-    sudo apt-get install apt-transport-https socat; \
-    sudo apt-get install vim less debian-goodies; \
-    sudo apt-get install autossh; \
+    sudo apt-get install --no-install-recommends apt-transport-https socat; \
+    sudo apt-get install --no-install-recommends vim less debian-goodies; \
+    sudo apt-get install --no-install-recommends autossh; \
     sudo apt install python3-pip; \
     sudo apt-get -y clean; \
     sudo rm -rf /var/lib/apt/lists/*; \
