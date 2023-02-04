@@ -1,13 +1,3 @@
-# Build from circleci image that uses current debian
-FROM cimg/base:edge-22.04 AS oracle8
-
-RUN sudo apt-get -y update && sudo apt-get -y install curl
-
-# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
-RUN set -eux; \
-    sudo mkdir -p /usr/lib/jvm/oracle8; \
-    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
-
 # GraalVM with native image support
 FROM ghcr.io/graalvm/graalvm-ce:ol8-java11-22 AS graalvm-native-image-jdk11
 RUN gu install native-image
@@ -16,7 +6,7 @@ FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22 AS graalvm-native-image-jdk17
 RUN gu install native-image
 
 # CircleCI Base Image with Ubuntu 22.04.3 LTS
-FROM cimg/base:edge-22.04
+FROM cimg/base:edge-22.04 AS builder
 
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/openjdk11
@@ -34,7 +24,17 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm
 COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22* /usr/lib/jvm/graalvm22-jdk11
 COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/graalvm22-jdk17
 
-COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
+RUN sudo apt-get -y update && sudo apt-get -y install curl
+# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
+RUN set -eux; \
+    sudo mkdir -p /usr/lib/jvm/oracle8; \
+    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+
+RUN sudo rm -rf /usr/lib/jvm/*/man /usr/lib/jvm/*/lib/src.zip
+
+FROM cimg/base:edge-22.04
+
+COPY --from=builder /usr/lib/jvm /usr/lib/jvm
 
 COPY autoforward.py /usr/local/bin/autoforward
 
