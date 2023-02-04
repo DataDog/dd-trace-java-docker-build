@@ -30,7 +30,12 @@ RUN set -eux; \
     sudo mkdir -p /usr/lib/jvm/oracle8; \
     curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
-RUN sudo rm -rf /usr/lib/jvm/*/man /usr/lib/jvm/*/lib/src.zip
+RUN sudo rm -rf \
+    /usr/lib/jvm/*/man \
+    /usr/lib/jvm/*/lib/src.zip \
+    /usr/lib/jvm/*/demo \
+    /usr/lib/jvm/*/sample \
+    /usr/lib/jvm/graalvm*/lib/installer
 
 FROM cimg/base:edge-22.04
 
