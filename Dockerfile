@@ -36,34 +36,25 @@ COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/g
 
 COPY --from=oracle8 /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
 
-RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
+COPY autoforward.py /usr/local/bin/autoforward
 
-# Install some common useful things
 RUN set -eux; \
     sudo apt-get update; \
     sudo apt-get dist-upgrade; \
     sudo apt-get install apt-transport-https socat; \
     sudo apt-get install vim less debian-goodies; \
-    sudo apt-get install autossh;
-
-# Install aws cli
-RUN set -eux; \
+    sudo apt-get install autossh; \
     sudo apt install python3-pip; \
-    pip3 install awscli;
+    sudo apt-get -y clean; \
+    sudo rm -rf /var/lib/apt/lists/*; \
+    pip3 install awscli; \
+    pip3 install requests requests-unixsocket; \
+    pip3 cache purge; \
+    sudo chmod +x /usr/local/bin/autoforward; \
+    sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v1.3.0-alpha/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"; \
+    sudo chmod +x /usr/local/bin/datadog-ci;\
+    sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*;
 
-# Install autoforward script
-COPY autoforward.py /usr/local/bin/autoforward
-RUN set -eux; \
-    sudo pip3 install requests requests-unixsocket; \
-    sudo chmod +x /usr/local/bin/autoforward
-
-# Install datadog-ci
-RUN sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v1.3.0-alpha/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" \
-    && sudo chmod +x /usr/local/bin/datadog-ci
-
-RUN sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*
-
-RUN sudo apt-get -y clean && sudo rm -rf /var/lib/apt/lists/*
 
 # IBM specific env variables
 ENV IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
