@@ -1,0 +1,47 @@
+# GraalVM with native image support
+FROM ghcr.io/graalvm/graalvm-ce:ol8-java11-22 AS graalvm-native-image-jdk11
+RUN gu install native-image
+
+FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22 AS graalvm-native-image-jdk17
+RUN gu install native-image
+
+# CircleCI Base Image with Ubuntu 22.04.3 LTS
+FROM cimg/base:edge-22.04 AS builder
+
+
+
+# <variant>
+COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
+COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
+COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
+
+COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
+
+COPY --from=ibm-semeru-runtimes:open-8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru8
+COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru11
+COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru17
+
+COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22* /usr/lib/jvm/graalvm22-jdk11
+COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/graalvm22-jdk17
+# </variant>
+
+RUN sudo apt-get -y update && sudo apt-get -y install curl
+# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
+RUN set -eux; \
+    sudo mkdir -p /usr/lib/jvm/oracle8; \
+    curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+
+RUN sudo rm -rf \
+    /usr/lib/jvm/*/man \
+    /usr/lib/jvm/*/lib/src.zip \
+    /usr/lib/jvm/*/demo \
+    /usr/lib/jvm/*/sample \
+    /usr/lib/jvm/graalvm*/lib/installer
+
+
+# <variant>
+FROM datadog/dd-trace-java-docker-build:smola_optimize-size
+COPY --from=builder /usr/lib/jvm/17 /usr/lib/jvm/17
+ENV JAVA_17_HOME=/usr/lib/jvm/17
+ENV JAVA_17_HOME=/usr/lib/jvm/17
+# </variant>
