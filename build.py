@@ -4,11 +4,13 @@ import re
 import subprocess
 import sys
 
-
-VARIANTS = {
+BASE_VARIANTS = {
     "8",
     "11",
     "17",
+}
+
+VARIANTS = {
     "ORACLE8",
     "ZULU7",
     "ZULU8",
@@ -62,7 +64,7 @@ def run(args, raise_on_status=True):
 if "--push" in sys.argv:
     print("Pushing images")
     base_branch = run(["git", "branch", "--show-current"]).stdout.strip()
-    for variant in VARIANTS:
+    for variant in VARIANTS + BASE_VARIANTS:
         variant = variant.lower()
         print(f"Pushing {variant}")
         run(["git", "checkout", base_branch])
