@@ -74,9 +74,10 @@ ENV JAVA_VERSION=unused
 # IBM specific env variables
 ENV IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
 
-ENV JAVA_8_HOME=/usr/lib/jvm/openjdk8
-ENV JAVA_11_HOME=/usr/lib/jvm/openjdk11
-ENV JAVA_17_HOME=/usr/lib/jvm/openjdk17
+ENV JAVA_HOME=/usr/lib/jvm/8
+ENV JAVA_8_HOME=/usr/lib/jvm/8
+ENV JAVA_11_HOME=/usr/lib/jvm/11
+ENV JAVA_17_HOME=/usr/lib/jvm/17
 # </base>
 # <variant>
 FROM datadog/dd-trace-java-docker-build:smola_optimize-size
