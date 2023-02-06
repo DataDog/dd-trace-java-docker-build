@@ -1,1 +1,1 @@
-Dockerfile.base
+Dockerfile.graalvm11
