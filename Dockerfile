@@ -1,1 +1,1 @@
-Dockerfile.base
+Dockerfile.zulu7
