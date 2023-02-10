@@ -1,0 +1,28 @@
+name: "Build"
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f # 2.3.4
+        with:
+          fetch-depth: 0
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@dc7b9719a96d48369863986a06765841d7ea23f6 # 2.0.0
+        with:
+          version: v0.9.1 # https://github.com/docker/buildx/issues/1533
+      - name: Build images
+        run: ./build
+      - name: Test images
+        run: ./build --test
+      - name: Push images
+        run: echo "TBD"
+
