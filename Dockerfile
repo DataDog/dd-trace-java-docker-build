@@ -87,18 +87,16 @@ ENV PATH=${JAVA_HOME}/bin:${PATH}
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
-COPY --from=builder \
-    /usr/lib/jvm/zulu7 \
-    /usr/lib/jvm/zulu8 \
-    /usr/lib/jvm/zulu11 \
-    /usr/lib/jvm/oracle8 \
-    /usr/lib/jvm/ibm8 \
-    /usr/lib/jvm/semeru8 \
-    /usr/lib/jvm/semeru11 \
-    /usr/lib/jvm/semeru17 \
-    /usr/lib/jvm/graalvm11 \
-    /usr/lib/jvm/graalvm17 \
-    /usr/lib/jvm/
+COPY --from=builder /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
+COPY --from=builder /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
+COPY --from=builder /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
+COPY --from=builder /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
+COPY --from=builder /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
+COPY --from=builder /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
+COPY --from=builder /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
+COPY --from=builder /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
+COPY --from=builder /usr/lib/jvm/graalvm11 /usr/lib/jvm/graalvm11
+COPY --from=builder /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
 
