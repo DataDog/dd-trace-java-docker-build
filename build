@@ -18,7 +18,7 @@ readonly VARIANTS=(
     graalvm17
 )
 
-readonly GIT_BRANCH="$(git branch --show-current)"
+readonly GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
 if [[ ${GIT_BRANCH} = master ]]; then
     TAG_PREFIX=""
 else
