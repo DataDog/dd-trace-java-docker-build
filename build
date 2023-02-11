@@ -33,13 +33,13 @@ function image_name() {
 function do_build() {
     docker build \
         --target base \
-        --tag ${IMAGE_NAME}:${TAG_PREFIX}base .
+        --tag "$(image_name base)" .
     docker build \
         --target full \
-        --tag ${IMAGE_NAME}:${TAG_PREFIX}latest .
+        --tag "$(image_name latest)" .
     for variant in "${BASE_VARIANTS[@]}"; do
         variant_lower="$(echo -n ${variant} | tr '[:upper:]' '[:lower:]')"
-        docker tag ${IMAGE_NAME}:${TAG_PREFIX}base ${IMAGE_NAME}:${TAG_PREFIX}${variant_lower}
+        docker tag "$(image_name base)" "$(image_name "${variant_lower}")"
     done
     for variant in "${VARIANTS[@]}"; do
         variant_upper="$(echo -n ${variant} | tr '[:lower:]' '[:upper:]')"
@@ -48,7 +48,7 @@ function do_build() {
             --build-arg VARIANT_UPPER=${variant_upper} \
             --build-arg VARIANT_LOWER=${variant_lower} \
             --target variant \
-            --tag ${IMAGE_NAME}:${TAG_PREFIX}${variant_lower} .
+            --tag "$(image_name "${variant_lower}")" .
     done
 }
 
