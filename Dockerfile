@@ -39,7 +39,7 @@ RUN sudo rm -rf \
     /usr/lib/jvm/*/sample \
     /usr/lib/jvm/graalvm*/lib/installer
 
-FROM cimg/base:edge-22.04 AS base_builder
+FROM scratch AS base_builder
 
 COPY --from=builder /usr/lib/jvm/8 /usr/lib/jvm/8
 COPY --from=builder /usr/lib/jvm/11 /usr/lib/jvm/11
