@@ -18,11 +18,19 @@ readonly VARIANTS=(
     graalvm17
 )
 
+# Get a TAG_PREFIX for every built image. Resulting images will be tagged as
+# ${TAG_PREFIX}${variant}, where ${variant} is base, latest or a JVM name.
+# ${TAG_PREFIX} is empty for the master branch, and it is a sanitized version
+# of the git branch otherwise. Sanitization is a conversion to lowercase, and
+# replacing all slashes with underscores, which is the same sanitization Docker
+# Hub does for their own builds.
 readonly GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
 if [[ ${GIT_BRANCH} = master ]]; then
     TAG_PREFIX=""
 else
-    TAG_PREFIX="$(echo -n ${GIT_BRANCH} | sed -e 's~/~_~g' | tr '[:upper:]' '[:lower:]')-"
+    TAG_PREFIX="${GIT_BRANCH}-"
+    TAG_PREFIX="${TAG_PREFIX,,}"
+    TAG_PREFIX="${TAG_PREFIX//\//_}"
 fi
 
 function image_name() {
@@ -38,15 +46,15 @@ function do_build() {
         --target full \
         --tag "$(image_name latest)" .
     for variant in "${BASE_VARIANTS[@]}"; do
-        variant_lower="$(echo -n ${variant} | tr '[:upper:]' '[:lower:]')"
+        variant_lower="${variant,,}"
         docker tag "$(image_name base)" "$(image_name "${variant_lower}")"
     done
     for variant in "${VARIANTS[@]}"; do
-        variant_upper="$(echo -n ${variant} | tr '[:lower:]' '[:upper:]')"
-        variant_lower="$(echo -n ${variant} | tr '[:upper:]' '[:lower:]')"
+        variant_upper="${variant^^}"
+        variant_lower="${variant,,}"
         docker build \
-            --build-arg VARIANT_UPPER=${variant_upper} \
-            --build-arg VARIANT_LOWER=${variant_lower} \
+            --build-arg "VARIANT_UPPER=${variant_upper}" \
+            --build-arg "VARIANT_LOWER=${variant_lower}" \
             --target variant \
             --tag "$(image_name "${variant_lower}")" .
     done
@@ -103,18 +111,18 @@ function do_test() {
 
 function do_inner_test() {
     local variant="${1}"
-    variant_lower="$(echo -n "${variant}" | tr '[:upper:]' '[:lower:]')"
-    variant_upper="$(echo -n "${variant}" | tr '[:lower:]' '[:upper:]')"
+    variant_lower="${variant,,}"
+    variant_upper="${variant^^}"
     set -x
-    $JAVA_HOME/bin/java -version
-    $JAVA_8_HOME/bin/java -version
-    $JAVA_11_HOME/bin/java -version
-    $JAVA_17_HOME/bin/java -version
+    "$JAVA_HOME/bin/java" -version
+    "$JAVA_8_HOME/bin/java" -version
+    "$JAVA_11_HOME/bin/java" -version
+    "$JAVA_17_HOME/bin/java" -version
     if [[ $variant != base && $variant != latest ]]; then
         env_lower="JAVA_${variant_lower}_HOME"
         env_upper="JAVA_${variant_upper}_HOME"
-        ${!env_lower}/bin/java -version
-        ${!env_upper}/bin/java -version
+        "${!env_lower}/bin/java" -version
+        "${!env_upper}/bin/java" -version
     fi
 }
 
