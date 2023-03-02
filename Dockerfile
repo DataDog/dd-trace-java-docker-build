@@ -6,7 +6,7 @@ FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22 AS graalvm-native-image-jdk17
 RUN gu install native-image
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
-FROM cimg/base:edge-22.04 AS builder
+FROM cimg/base:edge-22.04 AS all-jdk
 
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
@@ -39,17 +39,17 @@ RUN sudo rm -rf \
     /usr/lib/jvm/*/sample \
     /usr/lib/jvm/graalvm*/lib/installer
 
-FROM scratch AS base_builder
+FROM scratch AS default-jdk
 
-COPY --from=builder /usr/lib/jvm/8 /usr/lib/jvm/8
-COPY --from=builder /usr/lib/jvm/11 /usr/lib/jvm/11
-COPY --from=builder /usr/lib/jvm/17 /usr/lib/jvm/17
+COPY --from=all-jdk /usr/lib/jvm/8 /usr/lib/jvm/8
+COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
+COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 
 # Base image with minimunm requirenents to build the project.
 # Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
 FROM cimg/base:edge-22.04 AS base
 
-COPY --from=base_builder /usr/lib/jvm /usr/lib/jvm
+COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
 COPY autoforward.py /usr/local/bin/autoforward
 
@@ -66,8 +66,7 @@ RUN set -eux; \
     pip3 cache purge; \
     sudo chmod +x /usr/local/bin/autoforward; \
     sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v1.3.0-alpha/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"; \
-    sudo chmod +x /usr/local/bin/datadog-ci;\
-    sudo rm -rf /tmp/..?* /tmp/.[!.]* /tmp/*;
+    sudo chmod +x /usr/local/bin/datadog-ci;
 
 # IBM specific env variables
 ENV IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
@@ -87,16 +86,16 @@ ENV PATH=${JAVA_HOME}/bin:${PATH}
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
-COPY --from=builder /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
-COPY --from=builder /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
-COPY --from=builder /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
-COPY --from=builder /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
-COPY --from=builder /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
-COPY --from=builder /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
-COPY --from=builder /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
-COPY --from=builder /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
-COPY --from=builder /usr/lib/jvm/graalvm11 /usr/lib/jvm/graalvm11
-COPY --from=builder /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
+COPY --from=all-jdk /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
+COPY --from=all-jdk /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
+COPY --from=all-jdk /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
+COPY --from=all-jdk /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
+COPY --from=all-jdk /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
+COPY --from=all-jdk /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
+COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
+COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
+COPY --from=all-jdk /usr/lib/jvm/graalvm11 /usr/lib/jvm/graalvm11
+COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 
 ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
 
@@ -122,6 +121,6 @@ FROM base AS variant
 ARG VARIANT_LOWER
 ARG VARIANT_UPPER
 
-COPY --from=builder /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
+COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
