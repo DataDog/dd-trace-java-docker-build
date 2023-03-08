@@ -12,7 +12,7 @@ COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
 
-COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
+COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 
@@ -89,7 +89,7 @@ ENV PATH=${JAVA_HOME}/bin:${PATH}
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
-COPY --from=all-jdk /usr/lib/jvm/zulu7 /usr/lib/jvm/zulu7
+COPY --from=all-jdk /usr/lib/jvm/7 /usr/lib/jvm/7
 COPY --from=all-jdk /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=all-jdk /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 COPY --from=all-jdk /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
@@ -100,9 +100,9 @@ COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
 COPY --from=all-jdk /usr/lib/jvm/graalvm11 /usr/lib/jvm/graalvm11
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 
-ENV JAVA_7_HOME=/usr/lib/jvm/zulu7
+ENV JAVA_7_HOME=/usr/lib/jvm/7
 
-ENV JAVA_ZULU7_HOME=/usr/lib/jvm/zulu7
+ENV JAVA_ZULU7_HOME=/usr/lib/jvm/7
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
 

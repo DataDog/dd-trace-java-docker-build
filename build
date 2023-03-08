@@ -6,7 +6,7 @@ readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 readonly BASE_VARIANTS=(8 11 17)
 
 readonly VARIANTS=(
-    zulu7
+    7
     zulu8
     zulu11
     oracle8
