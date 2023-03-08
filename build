@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-readonly IMAGE_NAME="datadog/dd-trace-java-docker-build"
+readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
 readonly BASE_VARIANTS=(8 11 17)
 
@@ -127,7 +127,12 @@ function do_inner_test() {
 }
 
 function do_push() {
-    :
+    local tag
+    for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        tag="${tag,,}"
+        tag="$(image_name "${tag}")"
+        docker push "$tag"
+    done
 }
 
 if [[ -z ${1:-} ]]; then

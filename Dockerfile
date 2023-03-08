@@ -49,6 +49,9 @@ COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 # Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
 FROM cimg/base:edge-22.04 AS base
 
+# https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
+LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
+
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
 COPY autoforward.py /usr/local/bin/autoforward

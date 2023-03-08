@@ -20,5 +20,5 @@ jobs:
       - name: Test images
         run: ./build --test
       - name: Push images
-        run: echo "TBD"
+        run: ./build --push
 
