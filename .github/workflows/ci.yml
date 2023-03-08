@@ -17,6 +17,12 @@ jobs:
         uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7 # 2.4.1
       - name: Build images
         run: DOCKER_BUILDKIT=1 ./build
+      - name: Login to ghcr.io
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # 2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Test images
         run: ./build --test
       - name: Push images
