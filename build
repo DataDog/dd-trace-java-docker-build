@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+set -eu
+
+readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
+
+readonly BASE_VARIANTS=(8 11 17)
+
+readonly VARIANTS=(
+    7
+    zulu8
+    zulu11
+    oracle8
+    ibm8
+    semeru8
+    semeru11
+    semeru17
+    graalvm11
+    graalvm17
+)
+
+# Get a TAG_PREFIX for every built image. Resulting images will be tagged as
+# ${TAG_PREFIX}${variant}, where ${variant} is base, latest or a JVM name.
+# ${TAG_PREFIX} is empty for the master branch, and it is a sanitized version
+# of the git branch otherwise. Sanitization is a conversion to lowercase, and
+# replacing all slashes with underscores, which is the same sanitization Docker
+# Hub does for their own builds.
+readonly GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
+if [[ ${GIT_BRANCH} = master ]]; then
+    TAG_PREFIX=""
+else
+    TAG_PREFIX="${GIT_BRANCH}-"
+    TAG_PREFIX="${TAG_PREFIX,,}"
+    TAG_PREFIX="${TAG_PREFIX//\//_}"
+fi
+
+function image_name() {
+    local variant="${1}"
+    echo -n "${IMAGE_NAME}:${TAG_PREFIX}${variant}"
+}
+
+function do_build() {
+    docker build \
+        --target base \
+        --tag "$(image_name base)" .
+    docker build \
+        --target full \
+        --tag "$(image_name latest)" .
+    for variant in "${BASE_VARIANTS[@]}"; do
+        variant_lower="${variant,,}"
+        docker tag "$(image_name base)" "$(image_name "${variant_lower}")"
+    done
+    for variant in "${VARIANTS[@]}"; do
+        variant_upper="${variant^^}"
+        variant_lower="${variant,,}"
+        docker build \
+            --build-arg "VARIANT_UPPER=${variant_upper}" \
+            --build-arg "VARIANT_LOWER=${variant_lower}" \
+            --target variant \
+            --tag "$(image_name "${variant_lower}")" .
+    done
+}
+
+function list_layers() {
+    local image="${1}"
+    docker inspect "${image}" | jq -r '.[].RootFS.Layers[]'
+}
+
+function shares_layers() {
+    local base="${1}"
+    local other="${2}"
+    mapfile -t base_layers < <(list_layers "${base}")
+    mapfile -t other_layers < <(list_layers "${base}")
+    declare -A other_map
+    for ol in "${other_layers[@]}"; do
+        other_map[$ol]=true
+    done
+    for bl in "${base_layers[@]}"; do
+        if [[ ${other_map[$bl]} != true ]]; then
+            echo "Layer $bl from $base not found in $other"
+            return 1
+        fi
+    done
+}
+
+function do_test() {
+    local image_base image_variant
+    image_base="$(image_name base)"
+    mapfile -t base_layers < <(list_layers "${image_base}")
+    for variant in "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        image_variant="$(image_name "${variant}")"
+        echo "Checking shared layers for ${image_variant}..."
+        mapfile -t other_layers < <(list_layers "${image_variant}")
+        declare -A other_map
+        for ol in "${other_layers[@]}"; do
+            other_map[$ol]=true
+        done
+        for bl in "${base_layers[@]}"; do
+            if [[ ${other_map[$bl]:-} != true ]]; then
+                echo "Layer $bl from $image_base not found in $image_variant"
+                return 1
+            fi
+        done
+    done
+
+    for variant in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        image_variant="$(image_name "${variant}")"
+        echo "Running smoke tests for ${image_variant}..."
+        docker run -u "$(id -u):$(id -g)" -w /work -v "$(pwd):/work" --rm "${image_variant}" /work/build --inner-test "${variant}"
+    done
+}
+
+function do_inner_test() {
+    local variant="${1}"
+    variant_lower="${variant,,}"
+    variant_upper="${variant^^}"
+    set -x
+    "$JAVA_HOME/bin/java" -version
+    "$JAVA_8_HOME/bin/java" -version
+    "$JAVA_11_HOME/bin/java" -version
+    "$JAVA_17_HOME/bin/java" -version
+    if [[ $variant != base && $variant != latest ]]; then
+        env_lower="JAVA_${variant_lower}_HOME"
+        env_upper="JAVA_${variant_upper}_HOME"
+        "${!env_lower}/bin/java" -version
+        "${!env_upper}/bin/java" -version
+    fi
+}
+
+function do_push() {
+    local tag
+    for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        tag="${tag,,}"
+        tag="$(image_name "${tag}")"
+        docker push "$tag"
+    done
+}
+
+if [[ -z ${1:-} ]]; then
+    do_build
+elif [[ ${1} = "--test" ]]; then
+    do_test
+elif [[ ${1} = "--inner-test" ]]; then
+    shift
+    do_inner_test "$@"
+elif [[ ${1} = "--push" ]]; then
+    do_push
+fi
