@@ -86,6 +86,14 @@ ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
 
+FROM base AS variant
+ARG VARIANT_LOWER
+ARG VARIANT_UPPER
+
+COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
+ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
+ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
+
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
@@ -119,11 +127,3 @@ ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
 
 ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm11
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17
-
-FROM base AS variant
-ARG VARIANT_LOWER
-ARG VARIANT_UPPER
-
-COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
-ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
-ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
