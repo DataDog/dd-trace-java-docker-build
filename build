@@ -40,9 +40,11 @@ function image_name() {
 
 function do_build() {
     docker build \
+        --platform linux/amd64 \
         --target base \
         --tag "$(image_name base)" .
     docker build \
+        --platform linux/amd64 \
         --target full \
         --tag "$(image_name latest)" .
     for variant in "${BASE_VARIANTS[@]}"; do
@@ -55,6 +57,7 @@ function do_build() {
         docker build \
             --build-arg "VARIANT_UPPER=${variant_upper}" \
             --build-arg "VARIANT_LOWER=${variant_lower}" \
+            --platform linux/amd64 \
             --target variant \
             --tag "$(image_name "${variant_lower}")" .
     done
