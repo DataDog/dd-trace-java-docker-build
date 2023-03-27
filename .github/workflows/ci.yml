@@ -6,6 +6,12 @@ on:
   pull_request:
     branches:
       - master
+  schedule:
+    # Tuesday at 10. One day after the CircleCI scheduled upddate
+    # See: https://github.com/CircleCI-Public/cimg-base/blob/main/.circleci/schedule.json
+    - cron: '0 10 * * 2' 
+  workflow_dispatch:
+
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
