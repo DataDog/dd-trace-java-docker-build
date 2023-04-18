@@ -25,6 +25,10 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm
 COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22* /usr/lib/jvm/graalvm11
 COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/graalvm17
 
+RUN sudo apt-get -y update; \
+    sudo apt-get install openjdk-17-jdk;
+COPY /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
+
 RUN sudo apt-get -y update && sudo apt-get -y install curl
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN set -eux; \
@@ -127,3 +131,5 @@ ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
 
 ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm11
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17
+
+ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/ubuntu17

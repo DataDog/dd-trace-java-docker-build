@@ -16,6 +16,7 @@ readonly VARIANTS=(
     semeru17
     graalvm11
     graalvm17
+    ubuntu17
 )
 
 # Get a TAG_PREFIX for every built image. Resulting images will be tagged as
