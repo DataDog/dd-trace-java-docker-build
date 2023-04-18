@@ -31,6 +31,10 @@ RUN set -eux; \
     sudo mkdir -p /usr/lib/jvm/oracle8; \
     curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
+RUN set -eux;\
+    sudo apt-get install openjdk-17-jdk;\
+    sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
+
 # Remove cruft from JDKs that is not used in the build process.
 RUN sudo rm -rf \
     /usr/lib/jvm/*/man \
@@ -105,6 +109,7 @@ COPY --from=all-jdk /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
 COPY --from=all-jdk /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
 COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
 COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
+COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
 COPY --from=all-jdk /usr/lib/jvm/graalvm11 /usr/lib/jvm/graalvm11
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 
@@ -124,6 +129,8 @@ ENV JAVA_IBM17_HOME=/usr/lib/jvm/semeru17
 ENV JAVA_SEMERU8_HOME=/usr/lib/jvm/semeru8
 ENV JAVA_SEMERU11_HOME=/usr/lib/jvm/semeru11
 ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
+
+ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/ubuntu17
 
 ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm11
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17

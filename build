@@ -14,6 +14,7 @@ readonly VARIANTS=(
     semeru8
     semeru11
     semeru17
+    ubuntu17
     graalvm11
     graalvm17
 )
