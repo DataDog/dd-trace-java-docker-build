@@ -1,4 +1,4 @@
-name: Vulnerability check
+name: Daily vulnerability check
 
 on:
   push:
@@ -24,10 +24,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      #- name: Build docker image from Dockerfile
-      #  run: |
-      #    docker build -t dd-trace-java-docker-build:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@e5f43133f6e8736992c9f3c1b3296e24b37e17f2 # v0.10.0

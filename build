@@ -47,6 +47,7 @@ function do_build() {
         --platform linux/amd64 \
         --target full \
         --tag "$(image_name latest)" .
+    echo "LATEST_IMAGE_TAG=$(image_name latest)" >> $GITHUB_OUTPUT
     for variant in "${BASE_VARIANTS[@]}"; do
         variant_lower="${variant,,}"
         docker tag "$(image_name base)" "$(image_name "${variant_lower}")"
