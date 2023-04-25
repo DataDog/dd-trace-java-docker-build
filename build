@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -e
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
@@ -48,7 +48,9 @@ function do_build() {
         --platform linux/amd64 \
         --target full \
         --tag "$(image_name latest)" .
-    echo "LATEST_IMAGE_TAG=$(image_name latest)" >> $GITHUB_OUTPUT
+    if [[ -v "${GITHUB_OUTPUT}" ]]; then    
+        echo "LATEST_IMAGE_TAG=$(image_name latest)" >> $GITHUB_OUTPUT
+    fi
     for variant in "${BASE_VARIANTS[@]}"; do
         variant_lower="${variant,,}"
         docker tag "$(image_name base)" "$(image_name "${variant_lower}")"
