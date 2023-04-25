@@ -17,11 +17,11 @@ Image variants are available on a per JDK basis:
 To build all the Docker images:
 
 ```bash
-./build.sh
+./build
 ```
 
 And then check the built images:
 
 ```bash
-./build.sh --test
+./build --test
 ```
