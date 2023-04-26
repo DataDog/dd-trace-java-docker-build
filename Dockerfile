@@ -56,6 +56,16 @@ FROM cimg/base:edge-22.04 AS base
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
+# Replace Docker Compose and yq versions from CircleCI Base Image by latest
+RUN dockerPluginDir=/usr/local/lib/docker/cli-plugins && \
+	sudo curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o $dockerPluginDir/docker-compose && \
+	sudo chmod +x $dockerPluginDir/docker-compose && \
+	sudo curl -fL "https://github.com/docker/compose-switch/releases/latest/download/docker-compose-linux-$(dpkg --print-architecture)" -o /usr/local/bin/compose-switch && \
+	sudo chmod +x /usr/local/bin/compose-switch && \
+    sudo curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64.tar.gz" | \
+	sudo tar -xz -C /usr/local/bin && \
+	sudo mv /usr/local/bin/yq{_linux_amd64,}
+
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
 COPY autoforward.py /usr/local/bin/autoforward
