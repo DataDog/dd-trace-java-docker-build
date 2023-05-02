@@ -62,9 +62,11 @@ RUN dockerPluginDir=/usr/local/lib/docker/cli-plugins && \
 	sudo chmod +x $dockerPluginDir/docker-compose && \
 	sudo curl -fL "https://github.com/docker/compose-switch/releases/latest/download/docker-compose-linux-$(dpkg --print-architecture)" -o /usr/local/bin/compose-switch && \
 	sudo chmod +x /usr/local/bin/compose-switch && \
-    sudo curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64.tar.gz" | \
-	sudo tar -xz -C /usr/local/bin && \
-	sudo mv /usr/local/bin/yq{_linux_amd64,}
+    sudo rm /usr/local/bin/{install-man-page.sh,yq*} && \
+    curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$(dpkg --print-architecture).tar.gz" | \
+	sudo tar -xz -C /usr/local/bin --wildcards --no-anchored 'yq_linux_*' && \
+	sudo mv /usr/local/bin/yq{_linux_*,} && \
+    sudo chown root:root /usr/local/bin/yq
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
