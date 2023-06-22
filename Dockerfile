@@ -31,9 +31,13 @@ RUN set -eux; \
     sudo mkdir -p /usr/lib/jvm/oracle8; \
     curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 
+# Install Ubuntu's OpenJDK 17 and fix broken symlinks:
+# some files in /usr/lib/jvm/ubuntu17 are symlinks to /etc/java-17-openjdk/, so we just copy all symlinks targets.
 RUN set -eux;\
     sudo apt-get install openjdk-17-jdk;\
-    sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
+    sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17;\
+    sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/;\
+    sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/;
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN sudo rm -rf \
