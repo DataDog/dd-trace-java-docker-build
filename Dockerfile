@@ -37,7 +37,8 @@ RUN set -eux;\
     sudo apt-get install openjdk-17-jdk;\
     sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17;\
     sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/;\
-    sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/;
+    sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/;\
+    sudo cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/;
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN sudo rm -rf \
@@ -81,6 +82,7 @@ RUN set -eux; \
     sudo apt-get install --no-install-recommends apt-transport-https socat; \
     sudo apt-get install --no-install-recommends vim less debian-goodies; \
     sudo apt-get install --no-install-recommends autossh; \
+    sudo apt-get install ca-certificates-java;\
     sudo apt install python3-pip; \
     sudo apt-get -y clean; \
     sudo rm -rf /var/lib/apt/lists/*; \
