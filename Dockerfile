@@ -1,10 +1,3 @@
-# GraalVM with native image support
-FROM ghcr.io/graalvm/graalvm-ce:ol8-java11-22 AS graalvm-native-image-jdk11
-RUN gu install native-image
-
-FROM ghcr.io/graalvm/graalvm-ce:ol8-java17-22 AS graalvm-native-image-jdk17
-RUN gu install native-image
-
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM cimg/base:edge-22.04 AS all-jdk
 
@@ -22,8 +15,7 @@ COPY --from=ibm-semeru-runtimes:open-8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/
 COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru11
 COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru17
 
-COPY --from=graalvm-native-image-jdk11 /opt/graalvm-ce-java11-22* /usr/lib/jvm/graalvm11
-COPY --from=graalvm-native-image-jdk17 /opt/graalvm-ce-java17-22* /usr/lib/jvm/graalvm17
+COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 
 RUN sudo apt-get -y update && sudo apt-get -y install curl
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
@@ -128,7 +120,6 @@ COPY --from=all-jdk /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
 COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
 COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
 COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
-COPY --from=all-jdk /usr/lib/jvm/graalvm11 /usr/lib/jvm/graalvm11
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
@@ -150,5 +141,4 @@ ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
 
 ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/ubuntu17
 
-ENV JAVA_GRAALVM11_HOME=/usr/lib/jvm/graalvm11
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17
