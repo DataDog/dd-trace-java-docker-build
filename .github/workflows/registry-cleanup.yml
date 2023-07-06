@@ -1,0 +1,24 @@
+name: Clean up registry
+on:
+  schedule:
+    - cron: '15 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  prune-init-images:
+    name: Prune docker images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Prune untagged images
+      uses: vlaurin/action-ghcr-prune@0a539594d122b915e71c59733a5b115bfaaf5d52 #v0.5.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        organization: Datadog
+        container: dd-trace-java-docker-build
+        keep-younger-than: 30 # days
+        prune-tags-regexes: |
+          ^[a-z0-9]+_merge-
+        prune-untagged: true
