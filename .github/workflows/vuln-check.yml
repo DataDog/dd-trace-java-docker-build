@@ -18,12 +18,16 @@ jobs:
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-#      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     name: Run Trivy scanner
     runs-on: "ubuntu-20.04"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Free Disk Space (Ubuntu) # Required by trivy to have enough space to scan full image
+        uses: jlumbroso/free-disk-space@76866dbe54312617f00798d1762df7f43def6e5c # v1.2.0
+        with:
+          large-packages: false # Temporary fix for https://github.com/jlumbroso/free-disk-space/issues/4
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@41f05d9ecffa2ed3f1580af306000f734b733e54 # v0.11.2
