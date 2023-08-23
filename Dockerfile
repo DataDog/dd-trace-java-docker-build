@@ -1,9 +1,9 @@
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM cimg/base:edge-22.04 AS all-jdk
 
-COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
-COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
-COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
+COPY --from=eclipse-temurin:8u382-b05-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
+COPY --from=eclipse-temurin:11.0.19_7-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
+COPY --from=eclipse-temurin:17.0.7_7-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
