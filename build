@@ -152,6 +152,48 @@ function do_inner_test() {
     fi
 }
 
+function do_describe() {
+    local image
+    image="$(image_name latest)"
+    docker run \
+        -u "$(id -u):$(id -g)" \
+        -w /work \
+        -v "$(pwd):/work" \
+        --rm \
+        "$image" \
+        /work/build --inner-describe
+}
+
+function do_inner_describe() {
+    echo "# Contents"
+    echo
+    echo "## Operating System"
+    echo
+    echo "* $(lsb_release --description --short)"
+    echo
+    echo "## Tools"
+    echo
+    echo "* bash $BASH_VERSION"
+    echo "* $(git --version)"
+    echo "* $(docker --version)"
+    echo "* $(docker compose version)"
+    echo "* $(yq --version)"
+    echo "* datadog-ci $(datadog-ci version)"
+    echo
+    echo "## JDKs"
+    echo
+    for variant in "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        variant_upper="${variant^^}"
+        env_upper="JAVA_${variant_upper}_HOME"
+        echo "* $env_upper"
+        echo '```'
+        "${!env_upper}/bin/java" -version
+        echo '```'
+        echo
+    done
+    echo
+}
+
 function do_push() {
     local tag
     for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
@@ -168,6 +210,10 @@ elif [[ ${1} = "--test" ]]; then
 elif [[ ${1} = "--inner-test" ]]; then
     shift
     do_inner_test "$@"
+elif [[ ${1} = "--describe" ]]; then
+    do_describe
+elif [[ ${1} = "--inner-describe" ]]; then
+    do_inner_describe
 elif [[ ${1} = "--push" ]]; then
     do_push
 fi
