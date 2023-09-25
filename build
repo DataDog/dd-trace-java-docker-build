@@ -24,7 +24,9 @@ readonly VARIANTS=(
 # of the git branch otherwise. Sanitization is a conversion to lowercase, and
 # replacing all slashes with underscores, which is the same sanitization Docker
 # Hub does for their own builds.
-readonly GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
+GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
+# Fallback to local if there is no branch (e.g. dettached development)
+readonly GIT_BRANCH="${GIT_BRANCH:-local}"
 if [[ ${GIT_BRANCH} = master ]]; then
     TAG_PREFIX=""
 else
@@ -33,22 +35,43 @@ else
     TAG_PREFIX="${TAG_PREFIX//\//_}"
 fi
 
+# Cache the same RFC 3339 timestamp for re-use in all images built in the same batch.
+BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
+
+# Use buildkit to match CI as closely as possible.
+export DOCKER_BUILDKIT=1
+
+# docker build wrapper with common arguments
+# See https://github.com/opencontainers/image-spec/blob/main/annotations.md for common labels
+# See https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
+function docker_build() {
+    local target="$1"
+    local tag="$2"
+    shift
+    shift
+    docker build \
+        --platform linux/amd64 \
+        --label org.opencontainers.image.created="$BUILD_DATE" \
+        --label org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build \
+        --label org.opencontainers.image.revision="$GIT_HEAD_REF" \
+        --target "$target" \
+        --tag "$tag" \
+        "$@" \
+        .
+}
+
 function image_name() {
     local variant="${1}"
     echo -n "${IMAGE_NAME}:${TAG_PREFIX}${variant}"
 }
 
 function do_build() {
-    docker build \
-        --platform linux/amd64 \
-        --target base \
-        --tag "$(image_name base)" .
-    docker build \
-        --platform linux/amd64 \
-        --target full \
-        --tag "$(image_name latest)" .
+    docker_build base "$(image_name base)"
+    docker_build full "$(image_name latest)"
     if [ -n "${GITHUB_OUTPUT+unset}" ]; then
-        echo "LATEST_IMAGE_TAG=$(image_name latest)" >> $GITHUB_OUTPUT
+        # Make LATEST_IMAGE_TAG available to later GitHub Actions jobs
+        echo "LATEST_IMAGE_TAG=$(image_name latest)" >>"$GITHUB_OUTPUT"
     fi
     for variant in "${BASE_VARIANTS[@]}"; do
         variant_lower="${variant,,}"
@@ -57,12 +80,9 @@ function do_build() {
     for variant in "${VARIANTS[@]}"; do
         variant_upper="${variant^^}"
         variant_lower="${variant,,}"
-        docker build \
-            --build-arg "VARIANT_UPPER=${variant_upper}" \
-            --build-arg "VARIANT_LOWER=${variant_lower}" \
-            --platform linux/amd64 \
-            --target variant \
-            --tag "$(image_name "${variant_lower}")" .
+        docker_build variant "$(image_name "$variant_lower")" \
+            --build-arg "VARIANT_UPPER=$variant_upper" \
+            --build-arg "VARIANT_LOWER=$variant_lower"
     done
 }
 

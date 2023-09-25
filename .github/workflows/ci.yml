@@ -34,7 +34,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build images
         id: build
-        run: DOCKER_BUILDKIT=1 ./build
+        run: ./build
       - name: Test images
         run: ./build --test
       - name: Push images
