@@ -1,0 +1,32 @@
+name: Update docker lock
+on:
+  #schedule:
+  #  - cron: '15 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  update-docker-lock:
+    name: Update docker lock
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # 3.3.0
+      - name: Update Dockerfile
+        run: ./build --lock
+      - name: Check if Dockerfile changed
+        id: changes-check
+        run: |
+          if git diff --quiet; then
+            echo "No pending changes, no update needed."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create Pull Request
+        if: steps.changes-check.outputs.changed == 'true'
+        run: |
+          git commit -am 'Update base images'
+          git push origin HEAD:github-actions/docker-lock-update
+          gh pr create --title "Update base images" --base smola/staging --head github-actions/docker-lock-update
