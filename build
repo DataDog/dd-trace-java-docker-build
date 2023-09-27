@@ -203,6 +203,29 @@ function do_push() {
     done
 }
 
+function do_tag() {
+    local tag token
+    TAG_PREFIX=
+    echo "Pulling latest images"
+    for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        tag="${tag,,}"
+        tag="$(image_name "${tag}")"
+        docker pull "$tag"
+    done
+    token="$(curl "https://ghcr.io/token?scope=repository:datadog/dd-trace-java-docker-build:pull" | jq -r .token)"
+    latest_version="$(curl -s -k -X GET -H "Authorization: Bearer $token" -H "Accept: application/json" "https://ghcr.io/v2/datadog/dd-trace-java-docker-build/tags/list" | jq -r '.tags[]' | grep ^v | sed -e 's~^v~~g' -e 's~-.*~~g' | sort -rn | head -n 1)"
+    latest_version="${latest_version:-0}"
+    next_version="$((latest_version+1))"
+    echo "Latest version is v$latest_version, will tag v$next_version"
+    for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        tag="${tag,,}"
+        tag="$(image_name "${tag}")"
+        new_tag="${tag/:/:v$next_version-}"
+        docker tag "$tag" "$new_tag"
+        docker push "$new_tag"
+    done
+}
+
 if [[ -z ${1:-} ]]; then
     do_build
 elif [[ ${1} = "--test" ]]; then
@@ -216,4 +239,6 @@ elif [[ ${1} = "--inner-describe" ]]; then
     do_inner_describe
 elif [[ ${1} = "--push" ]]; then
     do_push
+elif [[ ${1} = "--tag" ]]; then
+    do_tag
 fi
