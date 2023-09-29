@@ -20,9 +20,3 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag images
         run: ./build --tag
-      - name: Create Pull Request
-        if: steps.changes-check.outputs.changed == 'true'
-        run: |
-          git commit -am 'Update base images'
-          git push origin HEAD:github-actions/docker-lock-update
-          gh pr create --title "Update base images" --base smola/staging --head github-actions/docker-lock-update
