@@ -203,6 +203,26 @@ function do_push() {
     done
 }
 
+function do_tag() {
+    local tag token version
+    TAG_PREFIX=
+    echo "Pulling latest images"
+    for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        tag="${tag,,}"
+        tag="$(image_name "${tag}")"
+        docker pull "$tag"
+    done
+    version="$(date +%y.%m)"
+    echo "Tagging version $version"
+    for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
+        tag="${tag,,}"
+        tag="$(image_name "${tag}")"
+        new_tag="${tag/:/:v$version-}"
+        docker tag "$tag" "$new_tag"
+        docker push "$new_tag"
+    done
+}
+
 if [[ -z ${1:-} ]]; then
     do_build
 elif [[ ${1} = "--test" ]]; then
@@ -216,4 +236,6 @@ elif [[ ${1} = "--inner-describe" ]]; then
     do_inner_describe
 elif [[ ${1} = "--push" ]]; then
     do_push
+elif [[ ${1} = "--tag" ]]; then
+    do_tag
 fi

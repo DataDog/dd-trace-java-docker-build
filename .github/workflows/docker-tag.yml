@@ -1,0 +1,25 @@
+name: Tag new images version
+on:
+  schedule:
+    # Quarterly schedule, roughly aligned with JDK CPU
+    - cron: '0 0 30 1,4,7,10 *'
+  workflow_dispatch:
+
+jobs:
+  tag-images:
+    name: Tag new images version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # 3.3.0
+      - name: Login to ghcr.io
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # 2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag images
+        run: ./build --tag
