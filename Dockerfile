@@ -4,6 +4,7 @@ FROM cimg/base:edge-22.04 AS all-jdk
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
+COPY --from=eclipse-temurin:21-jdk-jammy /opt/java/openjdk /usr/lib/jvm/21
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
@@ -45,6 +46,7 @@ FROM scratch AS default-jdk
 COPY --from=all-jdk /usr/lib/jvm/8 /usr/lib/jvm/8
 COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
 COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
+COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 
 # Base image with minimunm requirenents to build the project.
 # Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
@@ -98,6 +100,7 @@ ENV JAVA_VERSION=unused
 ENV JAVA_8_HOME=/usr/lib/jvm/8
 ENV JAVA_11_HOME=/usr/lib/jvm/11
 ENV JAVA_17_HOME=/usr/lib/jvm/17
+ENV JAVA_21_HOME=/usr/lib/jvm/21
 
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
