@@ -18,29 +18,31 @@ readonly VARIANTS=(
     graalvm17
 )
 
-# Get a TAG_PREFIX for every built image. Resulting images will be tagged as
-# ${TAG_PREFIX}${variant}, where ${variant} is base, latest or a JVM name.
-# ${TAG_PREFIX} is empty for the master branch, and it is a sanitized version
-# of the git branch otherwise. Sanitization is a conversion to lowercase, and
-# replacing all slashes with underscores, which is the same sanitization Docker
-# Hub does for their own builds.
-GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
-# Fallback to local if there is no branch (e.g. dettached development)
-readonly GIT_BRANCH="${GIT_BRANCH:-local}"
-if [[ ${GIT_BRANCH} = master ]]; then
-    TAG_PREFIX=""
-else
-    TAG_PREFIX="${GIT_BRANCH}-"
-    TAG_PREFIX="${TAG_PREFIX,,}"
-    TAG_PREFIX="${TAG_PREFIX//\//_}"
-fi
-
-# Cache the same RFC 3339 timestamp for re-use in all images built in the same batch.
-BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
-
 # Use buildkit to match CI as closely as possible.
 export DOCKER_BUILDKIT=1
+
+function compute_metadata() {
+    # Get a TAG_PREFIX for every built image. Resulting images will be tagged as
+    # ${TAG_PREFIX}${variant}, where ${variant} is base, latest or a JVM name.
+    # ${TAG_PREFIX} is empty for the master branch, and it is a sanitized version
+    # of the git branch otherwise. Sanitization is a conversion to lowercase, and
+    # replacing all slashes with underscores, which is the same sanitization Docker
+    # Hub does for their own builds.
+    GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
+    # Fallback to local if there is no branch (e.g. dettached development)
+    readonly GIT_BRANCH="${GIT_BRANCH:-local}"
+    if [[ ${GIT_BRANCH} = master ]]; then
+        TAG_PREFIX=""
+    else
+        TAG_PREFIX="${GIT_BRANCH}-"
+        TAG_PREFIX="${TAG_PREFIX,,}"
+        TAG_PREFIX="${TAG_PREFIX//\//_}"
+    fi
+
+    # Cache the same RFC 3339 timestamp for re-use in all images built in the same batch.
+    BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
+}
 
 # docker build wrapper with common arguments
 # See https://github.com/opencontainers/image-spec/blob/main/annotations.md for common labels
@@ -67,6 +69,7 @@ function image_name() {
 }
 
 function do_build() {
+    compute_metadata
     docker_build base "$(image_name base)"
     docker_build full "$(image_name latest)"
     if [ -n "${GITHUB_OUTPUT+unset}" ]; then
@@ -110,6 +113,7 @@ function shares_layers() {
 
 function do_test() {
     local image_base image_variant
+    compute_metadata
     image_base="$(image_name base)"
     mapfile -t base_layers < <(list_layers "${image_base}")
     for variant in "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
@@ -131,7 +135,13 @@ function do_test() {
     for variant in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
         image_variant="$(image_name "${variant}")"
         echo "Running smoke tests for ${image_variant}..."
-        docker run -u "$(id -u):$(id -g)" -w /work -v "$(pwd):/work" --rm "${image_variant}" /work/build --inner-test "${variant}"
+        docker run \
+            --user "$(id -u):$(id -g)" \
+            --workdir /work \
+            --volume "$(pwd):/work" \
+            --rm \
+            "${image_variant}" \
+            /work/build --inner-test "${variant}"
     done
 }
 
@@ -154,11 +164,12 @@ function do_inner_test() {
 
 function do_describe() {
     local image
+    compute_metadata
     image="$(image_name latest)"
     docker run \
-        -u "$(id -u):$(id -g)" \
-        -w /work \
-        -v "$(pwd):/work" \
+        --user "$(id -u):$(id -g)" \
+        --workdir /work \
+        --volume "$(pwd):/work" \
         --rm \
         "$image" \
         /work/build --inner-describe
@@ -196,6 +207,7 @@ function do_inner_describe() {
 
 function do_push() {
     local tag
+    compute_metadata
     for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
         tag="${tag,,}"
         tag="$(image_name "${tag}")"
