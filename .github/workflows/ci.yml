@@ -38,7 +38,7 @@ jobs:
       - name: Test images
         run: ./build --test
       - name: Describe images
-        run: ./build --describe
+        run: ./build --describe >> $GITHUB_STEP_SUMMARY
       - name: Push images
         run: ./build --push
       - name: Free Disk Space (Ubuntu) # Required by trivy to have enough space to scan full image
