@@ -95,23 +95,6 @@ function list_layers() {
     docker inspect "${image}" | jq -r '.[].RootFS.Layers[]'
 }
 
-function shares_layers() {
-    local base="${1}"
-    local other="${2}"
-    mapfile -t base_layers < <(list_layers "${base}")
-    mapfile -t other_layers < <(list_layers "${base}")
-    declare -A other_map
-    for ol in "${other_layers[@]}"; do
-        other_map[$ol]=true
-    done
-    for bl in "${base_layers[@]}"; do
-        if [[ ${other_map[$bl]} != true ]]; then
-            echo "Layer $bl from $base not found in $other"
-            return 1
-        fi
-    done
-}
-
 function do_test() {
     local image_base image_variant
     compute_metadata
@@ -200,7 +183,7 @@ function do_inner_describe() {
         env_upper="JAVA_${variant_upper}_HOME"
         echo "* $env_upper"
         echo '```'
-        "${!env_upper}/bin/java" -version
+        "${!env_upper}/bin/java" -version 2>&1
         echo '```'
         echo
     done
