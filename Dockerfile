@@ -98,7 +98,7 @@ RUN <<-EOT
 	pip3 install requests requests-unixsocket
 	pip3 cache purge
 	sudo chmod +x /usr/local/bin/autoforward
-	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v1.3.0-alpha/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
+	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
 	sudo chmod +x /usr/local/bin/datadog-ci
 EOT
 
