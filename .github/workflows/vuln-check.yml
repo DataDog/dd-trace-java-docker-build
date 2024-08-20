@@ -24,13 +24,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Free Disk Space (Ubuntu) # Required by trivy to have enough space to scan full image
-        uses: jlumbroso/free-disk-space@76866dbe54312617f00798d1762df7f43def6e5c # v1.2.0
+      - name: Free Disk Space (Ubuntu) # Reclaim disk space for scan
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
         with:
-          large-packages: false # Temporary fix for https://github.com/jlumbroso/free-disk-space/issues/4
+          docker-images: false # Do not remove locally built images (including trivy scanner)
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@41f05d9ecffa2ed3f1580af306000f734b733e54 # v0.11.2
+        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # v0.24.0
         with:
           image-ref: 'ghcr.io/datadog/dd-trace-java-docker-build:latest'
           format: 'sarif'
@@ -39,7 +39,7 @@ jobs:
           limit-severities-for-sarif: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
