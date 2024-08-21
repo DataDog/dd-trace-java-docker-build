@@ -64,14 +64,14 @@ FROM cimg/base:current-22.04 AS base
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
-# Replace Docker Compose and yq versions from CircleCI Base Image by latest
+# Replace Docker Compose and yq versions by latest and remove docker-switch from CircleCI Base Image for security purposes
 RUN <<-EOT
 	set -eu
 	dockerPluginDir=/usr/local/lib/docker/cli-plugins
 	sudo curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o $dockerPluginDir/docker-compose
 	sudo chmod +x $dockerPluginDir/docker-compose
-	sudo curl -fL "https://github.com/docker/compose-switch/releases/latest/download/docker-compose-linux-$(dpkg --print-architecture)" -o /usr/local/bin/compose-switch
-	sudo chmod +x /usr/local/bin/compose-switch
+	sudo sudo update-alternatives --remove docker-compose /usr/local/bin/compose-switch
+	sudo rm -f /usr/local/bin/compose-switch
 	sudo rm /usr/local/bin/{install-man-page.sh,yq*}
 	curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$(dpkg --print-architecture).tar.gz" | sudo tar -xz -C /usr/local/bin --wildcards --no-anchored 'yq_linux_*'
 	sudo mv /usr/local/bin/yq{_linux_*,}
