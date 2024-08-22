@@ -82,8 +82,10 @@ COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
 COPY autoforward.py /usr/local/bin/autoforward
 
-# Force downgrade of urllib3 to work around https://github.com/docker/docker-py/issues/3113
-# Install urllib3 early since it is also used by awscli
+# Install the following tools
+# - awscli: AWS CLI
+# - autoforward dependencies: tool to forward request to a remote Docker deamon
+# - datadog-ci: Datadog CI tool
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
@@ -94,7 +96,7 @@ RUN <<-EOT
 	sudo apt install python3-pip
 	sudo apt-get -y clean
 	sudo rm -rf /var/lib/apt/lists/*
-	pip3 install "urllib3>=1.25.4,<2" awscli
+	pip3 install awscli
 	pip3 install requests requests-unixsocket
 	pip3 cache purge
 	sudo chmod +x /usr/local/bin/autoforward
