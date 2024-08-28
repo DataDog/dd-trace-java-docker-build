@@ -2,7 +2,7 @@
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM cimg/base:current-22.04 AS all-jdk
-
+ENV FOO=bar
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
