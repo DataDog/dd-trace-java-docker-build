@@ -22,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # 3.6.1
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # 3.8.0
       - name: Login to ghcr.io
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # 3.3.0
         with:
@@ -46,7 +46,7 @@ jobs:
       - name: Push images
         run: ./build --push
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
         with:
           image-ref: '${{ steps.build.outputs.LATEST_IMAGE_TAG }}'
           format: 'sarif'
@@ -70,6 +70,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
       - name: Keep workflow alive
-        uses: gautamkrishnar/keepalive-workflow@24ba73b43d5ea8d2b3d56fb9b8de951ba9a3dd18 # v2.0.6
+        uses: gautamkrishnar/keepalive-workflow@995aec69bb3f2b45b20f4e107907992c8715086d # v2.0.8
