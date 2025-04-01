@@ -14,9 +14,9 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # 4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
       - name: Login to ghcr.io
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # 3.3.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # 3.4.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
