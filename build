@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21)
+readonly BASE_VARIANTS=(8 11 17 21 24)
 
 readonly VARIANTS=(
     7
@@ -139,6 +139,7 @@ function do_inner_test() {
     "$JAVA_11_HOME/bin/java" -version
     "$JAVA_17_HOME/bin/java" -version
     "$JAVA_21_HOME/bin/java" -version
+    "$JAVA_24_HOME/bin/java" -version
     if [[ $variant != base && $variant != latest ]]; then
         env_lower="JAVA_${variant_lower}_HOME"
         env_upper="JAVA_${variant_upper}_HOME"
