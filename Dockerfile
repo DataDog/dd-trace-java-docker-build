@@ -56,7 +56,7 @@ RUN <<-EOT
 EOT
 
 FROM scratch AS default-jdk
-ARG LATEST_VERSION=24
+ARG LATEST_VERSION
 
 COPY --from=all-jdk /usr/lib/jvm/8 /usr/lib/jvm/8
 COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
@@ -67,7 +67,7 @@ COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION
 # Base image with minimum requirements to build the project.
 # Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
 FROM cimg/base:current-22.04 AS base
-ARG LATEST_VERSION=24
+ARG LATEST_VERSION
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
@@ -132,6 +132,7 @@ ENV PATH=${JAVA_HOME}/bin:${PATH}
 FROM base AS variant
 ARG VARIANT_LOWER
 ARG VARIANT_UPPER
+ARG LATEST_VERSION
 
 COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
@@ -139,6 +140,7 @@ ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
 # Full image for debugging, contains all JDKs.
 FROM base AS full
+ARG LATEST_VERSION
 
 COPY --from=all-jdk /usr/lib/jvm/7 /usr/lib/jvm/7
 COPY --from=all-jdk /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
