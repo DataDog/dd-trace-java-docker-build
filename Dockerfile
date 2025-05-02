@@ -1,13 +1,17 @@
 # syntax=docker/dockerfile:1.6
 
+ARG LATEST_VERSION
+FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
+
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM cimg/base:current-22.04 AS all-jdk
+ARG LATEST_VERSION
 
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-jammy /opt/java/openjdk /usr/lib/jvm/21
-COPY --from=openjdk:24-jdk /usr/java/openjdk-24 /usr/lib/jvm/24
+COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
@@ -52,16 +56,18 @@ RUN <<-EOT
 EOT
 
 FROM scratch AS default-jdk
+ARG LATEST_VERSION=24
 
 COPY --from=all-jdk /usr/lib/jvm/8 /usr/lib/jvm/8
 COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
 COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
-COPY --from=all-jdk /usr/lib/jvm/24 /usr/lib/jvm/24
+COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION}
 
 # Base image with minimum requirements to build the project.
 # Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
 FROM cimg/base:current-22.04 AS base
+ARG LATEST_VERSION=24
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
@@ -118,7 +124,7 @@ ENV JAVA_8_HOME=/usr/lib/jvm/8
 ENV JAVA_11_HOME=/usr/lib/jvm/11
 ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_21_HOME=/usr/lib/jvm/21
-ENV JAVA_24_HOME=/usr/lib/jvm/24
+ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
 
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
