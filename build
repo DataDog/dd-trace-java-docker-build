@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21 24)
+readonly BASE_VARIANTS=(8 11 17 21 latest)
 
 readonly VARIANTS=(
     7
