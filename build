@@ -45,6 +45,23 @@ function compute_metadata() {
     GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
 }
 
+function compute_latest_version() {
+    # Java versions are typically released towards the end of the month in March and September,
+    # so we use the version from the previous release cycle until the month after the release.
+    local base_year=2025
+    local base_version=23
+
+    version="$((base_version + ($(date +%Y) - base_year) * 2))"
+    if [ "$(date +%m)" -ge 4 ]; then
+        version="$((version + 1))"
+    fi
+    if [ "$(date +%m)" -ge 10 ]; then
+        version="$((version + 1))"
+    fi
+
+    export LATEST_VERSION="$version"
+}
+
 # docker build wrapper with common arguments
 # See https://github.com/opencontainers/image-spec/blob/main/annotations.md for common labels
 # See https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
@@ -54,6 +71,7 @@ function docker_build() {
     shift
     shift
     docker build \
+        --build-arg LATEST_VERSION=$LATEST_VERSION \
         --platform linux/amd64 \
         --label org.opencontainers.image.created="$BUILD_DATE" \
         --label org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build \
@@ -71,6 +89,7 @@ function image_name() {
 
 function do_build() {
     compute_metadata
+    compute_latest_version
     docker_build base "$(image_name base)"
     docker_build full "$(image_name latest)"
     if [ -n "${GITHUB_OUTPUT+unset}" ]; then
@@ -130,16 +149,19 @@ function do_test() {
 }
 
 function do_inner_test() {
+    compute_latest_version
     local variant="${1}"
     variant_lower="${variant,,}"
     variant_upper="${variant^^}"
+    java_latest_home="JAVA_${LATEST_VERSION}_HOME"
     set -x
     "$JAVA_HOME/bin/java" -version
     "$JAVA_8_HOME/bin/java" -version
     "$JAVA_11_HOME/bin/java" -version
     "$JAVA_17_HOME/bin/java" -version
     "$JAVA_21_HOME/bin/java" -version
-    "$JAVA_24_HOME/bin/java" -version
+    "${!java_latest_home}/bin/java" -version
+
     if [[ $variant != base && $variant != latest ]]; then
         env_lower="JAVA_${variant_lower}_HOME"
         env_upper="JAVA_${variant_upper}_HOME"
