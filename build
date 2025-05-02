@@ -173,6 +173,8 @@ function do_inner_test() {
 function do_describe() {
     local image
     compute_metadata
+    compute_latest_version
+    docker_build full "$(image_name latest)"
     image="$(image_name latest)"
     docker run \
         --user "$(id -u):$(id -g)" \
@@ -184,6 +186,7 @@ function do_describe() {
 }
 
 function do_inner_describe() {
+    compute_latest_version
     echo "# Contents"
     echo
     echo "## Operating System"
@@ -202,7 +205,11 @@ function do_inner_describe() {
     echo "## JDKs"
     echo
     for variant in "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
-        variant_upper="${variant^^}"
+        if [[ $variant == "latest" ]]; then
+            variant_upper="${LATEST_VERSION}"
+        else
+            variant_upper="${variant^^}"
+        fi
         env_upper="JAVA_${variant_upper}_HOME"
         echo "* $env_upper"
         echo '```'
