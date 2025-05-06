@@ -132,7 +132,6 @@ ENV PATH=${JAVA_HOME}/bin:${PATH}
 FROM base AS variant
 ARG VARIANT_LOWER
 ARG VARIANT_UPPER
-ARG LATEST_VERSION
 
 COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
@@ -140,7 +139,6 @@ ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
 # Full image for debugging, contains all JDKs.
 FROM base AS full
-ARG LATEST_VERSION
 
 COPY --from=all-jdk /usr/lib/jvm/7 /usr/lib/jvm/7
 COPY --from=all-jdk /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
