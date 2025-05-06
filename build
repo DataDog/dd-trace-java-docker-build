@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21 latest)
+readonly BASE_VARIANTS=(8 11 17 21 latest_base)
 
 readonly VARIANTS=(
     7
@@ -163,6 +163,10 @@ function do_inner_test() {
     "${!java_latest_home}/bin/java" -version
 
     if [[ $variant != base && $variant != latest ]]; then
+        if [[ $variant == "latest_base" ]]; then
+            variant_lower="${LATEST_VERSION}"
+            variant_upper="${LATEST_VERSION}"
+        fi
         env_lower="JAVA_${variant_lower}_HOME"
         env_upper="JAVA_${variant_upper}_HOME"
         "${!env_lower}/bin/java" -version
@@ -171,10 +175,10 @@ function do_inner_test() {
 }
 
 function do_describe() {
-    local image
     compute_metadata
     compute_latest_version
     docker_build full "$(image_name latest)"
+    local image
     image="$(image_name latest)"
     docker run \
         --user "$(id -u):$(id -g)" \
@@ -205,7 +209,7 @@ function do_inner_describe() {
     echo "## JDKs"
     echo
     for variant in "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
-        if [[ $variant == "latest" ]]; then
+        if [[ $variant == "latest_base" ]]; then
             variant_upper="${LATEST_VERSION}"
         else
             variant_upper="${variant^^}"
