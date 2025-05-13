@@ -4,7 +4,7 @@ ARG LATEST_VERSION
 FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
-FROM cimg/base:current-22.04 AS all-jdk
+FROM ubuntu:24.04 AS all-jdk
 ARG LATEST_VERSION
 
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
@@ -26,28 +26,34 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 
-RUN sudo apt-get -y update && sudo apt-get -y install curl
+RUN apt-get update && \
+    apt-get install -y curl tar apt-transport-https ca-certificates gnupg wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN <<-EOT
 	set -eux
-	sudo mkdir -p /usr/lib/jvm/oracle8
-	curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	mkdir -p /usr/lib/jvm/oracle8
+	curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 EOT
 
 # Install Ubuntu's OpenJDK 17 and fix broken symlinks:
 # some files in /usr/lib/jvm/ubuntu17 are symlinks to /etc/java-17-openjdk/, so we just copy all symlinks targets.
 RUN <<-EOT
 	set -eux
-	sudo apt-get install openjdk-17-jdk
-	sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
-	sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/
-	sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/
-	sudo cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/
+	apt-get update
+	apt-get install -y openjdk-17-jdk
+	mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
+	mkdir -p /usr/lib/jvm/ubuntu17/conf/ /usr/lib/jvm/ubuntu17/lib/
+	cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/
+	cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/
+	cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
-	sudo rm -rf \
+	rm -rf \
 	  /usr/lib/jvm/*/man \
 	  /usr/lib/jvm/*/lib/src.zip \
 	  /usr/lib/jvm/*/demo \
@@ -65,26 +71,31 @@ COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION}
 
 # Base image with minimum requirements to build the project.
-# Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
-FROM cimg/base:current-22.04 AS base
+# Based on the latest Ubuntu LTS image.
+FROM ubuntu:24.04 AS base
 ARG LATEST_VERSION
 ENV LATEST_VERSION=${LATEST_VERSION}
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
-# Replace Docker Compose and yq versions by latest and remove docker-switch from CircleCI Base Image for security purposes.
+RUN apt-get update && \
+    apt-get install -y curl apt-transport-https ca-certificates gnupg \
+    socat less debian-goodies autossh ca-certificates-java python3-pip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
+
+# Install Docker Compose plugin and yq YAML processor
 RUN <<-EOT
 	set -eu
 	dockerPluginDir=/usr/local/lib/docker/cli-plugins
-	sudo curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o $dockerPluginDir/docker-compose
-	sudo chmod +x $dockerPluginDir/docker-compose
-	sudo sudo update-alternatives --remove docker-compose /usr/local/bin/compose-switch
-	sudo rm -f /usr/local/bin/compose-switch
-	sudo rm /usr/local/bin/{install-man-page.sh,yq*}
-	curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$(dpkg --print-architecture).tar.gz" | sudo tar -xz -C /usr/local/bin --wildcards --no-anchored 'yq_linux_*'
-	sudo mv /usr/local/bin/yq{_linux_*,}
-	sudo chown root:root /usr/local/bin/yq
+	curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o $dockerPluginDir/docker-compose
+	chmod +x $dockerPluginDir/docker-compose
+	curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$(dpkg --print-architecture).tar.gz" | tar -xz -C /usr/local/bin --wildcards --no-anchored 'yq_linux_*'
+	YQ_PATH=$(find /usr/local/bin -name 'yq_linux_*')
+	mv "$YQ_PATH" /usr/local/bin/yq
+	chown root:root /usr/local/bin/yq
 EOT
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
@@ -97,20 +108,14 @@ COPY autoforward.py /usr/local/bin/autoforward
 # - datadog-ci: Datadog CI tool
 RUN <<-EOT
 	set -eux
-	sudo apt-get update
-	sudo apt-get install --no-install-recommends apt-transport-https socat
-	sudo apt-get install --no-install-recommends vim less debian-goodies
-	sudo apt-get install --no-install-recommends autossh
-	sudo apt-get install ca-certificates-java
-	sudo apt install python3-pip
-	sudo apt-get -y clean
-	sudo rm -rf /var/lib/apt/lists/*
-	pip3 install awscli
-	pip3 install requests requests-unixsocket2
+	apt-get update
+	pip3 install --break-system-packages awscli requests requests-unixsocket2
 	pip3 cache purge
-	sudo chmod +x /usr/local/bin/autoforward
-	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
-	sudo chmod +x /usr/local/bin/datadog-ci
+	chmod +x /usr/local/bin/autoforward
+	curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
+	chmod +x /usr/local/bin/datadog-ci
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
 EOT
 
 # IBM specific env variables
