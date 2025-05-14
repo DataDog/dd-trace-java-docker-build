@@ -26,10 +26,13 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 
-RUN apt-get update && \
-    apt-get install -y curl tar apt-transport-https ca-certificates gnupg && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN <<-EOT
+	set -eux
+	apt-get update
+	apt-get install -y curl tar apt-transport-https ca-certificates gnupg
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
+EOT
 
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN <<-EOT
@@ -79,12 +82,15 @@ ENV LATEST_VERSION=${LATEST_VERSION}
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
-RUN apt-get update && \
-    apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
-    socat less debian-goodies autossh ca-certificates-java python3-pip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
+RUN <<-EOT
+	set -eux
+	apt-get update
+	apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
+	socat less debian-goodies autossh ca-certificates-java python3-pip
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
+	mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
+EOT
 
 # Install Docker Compose plugin and yq YAML processor
 RUN <<-EOT
