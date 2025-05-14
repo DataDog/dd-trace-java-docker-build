@@ -27,7 +27,7 @@ COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/gra
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 
 RUN apt-get update && \
-    apt-get install -y curl tar apt-transport-https ca-certificates gnupg wget && \
+    apt-get install -y curl tar apt-transport-https ca-certificates gnupg && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -80,7 +80,7 @@ ENV LATEST_VERSION=${LATEST_VERSION}
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
 RUN apt-get update && \
-    apt-get install -y curl apt-transport-https ca-certificates gnupg \
+    apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
     socat less debian-goodies autossh ca-certificates-java python3-pip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
@@ -92,6 +92,8 @@ RUN <<-EOT
 	dockerPluginDir=/usr/local/lib/docker/cli-plugins
 	curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o $dockerPluginDir/docker-compose
 	chmod +x $dockerPluginDir/docker-compose
+	update-alternatives --remove docker-compose /usr/local/bin/compose-switch
+	rm -f /usr/local/bin/compose-switch
 	curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$(dpkg --print-architecture).tar.gz" | tar -xz -C /usr/local/bin --wildcards --no-anchored 'yq_linux_*'
 	YQ_PATH=$(find /usr/local/bin -name 'yq_linux_*')
 	mv "$YQ_PATH" /usr/local/bin/yq
