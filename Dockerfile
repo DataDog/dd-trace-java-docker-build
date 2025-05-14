@@ -68,6 +68,7 @@ COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION
 # Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
 FROM cimg/base:current-22.04 AS base
 ARG LATEST_VERSION
+ENV LATEST_VERSION=${LATEST_VERSION}
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
