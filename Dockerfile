@@ -38,7 +38,7 @@ EOT
 RUN <<-EOT
 	set -eux
 	mkdir -p /usr/lib/jvm/oracle8
-	curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=246284_165374ff4ea84ef0bbd821706e29b123" | tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=252034_8a1589aa0fe24566b4337beee47c2d29" | tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 EOT
 
 # Install Ubuntu's OpenJDK 17 and fix broken symlinks:
