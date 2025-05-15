@@ -25,6 +25,8 @@ RUN <<-EOT
 	set -eux
 	apt-get update
 	apt-get install -y curl tar apt-transport-https ca-certificates gnupg
+	groupadd --gid 1001 non-root-user
+	useradd --uid 1001 --gid 1001 -m non-root-user
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 EOT
@@ -59,6 +61,9 @@ RUN <<-EOT
 	  /usr/lib/jvm/graalvm*/lib/installer
 EOT
 
+# Switch to non-root user during runtime for security
+USER non-root-user
+
 FROM scratch AS default-jdk
 
 COPY --from=all-jdk /usr/lib/jvm/8 /usr/lib/jvm/8
@@ -78,6 +83,8 @@ RUN <<-EOT
 	apt-get update
 	apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
 	socat less debian-goodies autossh ca-certificates-java python3-pip
+	groupadd --gid 1001 non-root-user
+	useradd --uid 1001 --gid 1001 -m non-root-user
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 	mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
@@ -117,6 +124,9 @@ RUN <<-EOT
 	rm -rf /var/lib/apt/lists/*
 EOT
 
+# Switch to non-root user during runtime for security
+USER non-root-user
+
 # IBM specific env variables
 ENV IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
 
@@ -141,6 +151,9 @@ COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
+# Switch to non-root user during runtime for security
+USER non-root-user
+
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
@@ -155,6 +168,9 @@ COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
 COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
+
+# Switch to non-root user during runtime for security
+USER non-root-user
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
 
