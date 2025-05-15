@@ -29,12 +29,15 @@ COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/gra
 RUN <<-EOT
 	set -eux
 	apt-get update
-	apt-get install -y curl tar apt-transport-https ca-certificates gnupg
+	apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales
+	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-user
 	useradd --uid 1001 --gid 1001 -m non-root-user
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 EOT
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN <<-EOT
@@ -91,13 +94,16 @@ RUN <<-EOT
 	set -eux
 	apt-get update
 	apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
-	socat less debian-goodies autossh ca-certificates-java python3-pip
+	socat less debian-goodies autossh ca-certificates-java python3-pip locales
+	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-user
 	useradd --uid 1001 --gid 1001 -m non-root-user
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 	mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
 EOT
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # Install Docker Compose plugin and yq YAML processor
 RUN <<-EOT
