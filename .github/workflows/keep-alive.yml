@@ -1,0 +1,34 @@
+name: Keep Workflow Alive
+description: |
+  This workflow is designed to keep the repository alive by making a dummy commit
+  to the `keepalive` branch to make sure the GitHub workflow will continue to run.
+  It runs on a weekly schedule and can also be triggered manually via the GitHub
+  Actions UI.
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push changes to the repository
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Make dummy commit to keep workflow alive
+        run: |
+          git fetch origin keepalive
+          git checkout keepalive
+          echo "Last update from $(date -u)" > keepalive
+          git add keepalive
+          git commit -m "chore: keepalive" || echo "No changes to commit"
+          git push origin keepalive
