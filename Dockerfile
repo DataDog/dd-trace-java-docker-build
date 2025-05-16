@@ -57,6 +57,8 @@ RUN <<-EOT
 	cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/
 	cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/
 	cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
