@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.6
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
-FROM ubuntu:24.04 AS all-jdk
+FROM ubuntu:latest AS all-jdk
 
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
@@ -75,8 +75,8 @@ COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 
 # Base image with minimunm requirenents to build the project.
-# Based on CircleCI Base Image with Ubuntu 22.04.3 LTS, present in most runners.
-FROM ubuntu:24.04 AS base
+# Based on the latest Ubuntu LTS image.
+FROM ubuntu:latest AS base
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
