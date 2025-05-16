@@ -29,7 +29,7 @@ COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/gra
 RUN <<-EOT
 	set -eux
 	apt-get update
-	apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales
+	apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh
 	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-group
 	useradd --uid 1001 --gid non-root-group -m non-root-group
@@ -97,7 +97,7 @@ RUN <<-EOT
 	set -eux
 	apt-get update
 	apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
-	socat less debian-goodies autossh ca-certificates-java python3-pip locales
+	socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh
 	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-group
 	useradd --uid 1001 --gid non-root-group -m non-root-group
