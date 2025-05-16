@@ -33,6 +33,9 @@ RUN <<-EOT
 	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-group
 	useradd --uid 1001 --gid non-root-group -m non-root-group
+	mkdir -p /home/non-root-group/.config
+	git config --system --add safe.directory '*'
+	chown -R non-root-group:non-root-group /home/non-root-group/.config
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 EOT
@@ -101,6 +104,9 @@ RUN <<-EOT
 	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-group
 	useradd --uid 1001 --gid non-root-group -m non-root-group
+	mkdir -p /home/non-root-group/.config
+	git config --system --add safe.directory '*'
+	chown -R non-root-group:non-root-group /home/non-root-group/.config
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 	mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
