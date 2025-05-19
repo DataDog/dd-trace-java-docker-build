@@ -7,6 +7,35 @@ FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 FROM ubuntu:24.04 AS all-jdk
 ARG LATEST_VERSION
 
+RUN <<-EOT
+	set -eux
+	apt-get update
+	apt-get install -y sudo
+	groupadd --gid 1001 non-root-group
+	useradd --uid 1001 --gid non-root-group -m non-root-user
+	echo "non-root-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/non-root-user
+	chmod 0440 /etc/sudoers.d/non-root-user
+	mkdir -p /home/non-root-user/.config
+	chown -R non-root-user:non-root-group /home/non-root-user/.config
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
+EOT
+
+USER non-root-user
+WORKDIR /home/non-root-user
+
+RUN <<-EOT
+	set -eux
+	sudo apt-get update
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh
+	sudo locale-gen en_US.UTF-8
+	sudo git config --system --add safe.directory "*"
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
+EOT
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
 COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
@@ -26,57 +55,37 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 
-RUN <<-EOT
-	set -eux
-	apt-get update
-	apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh
-	locale-gen en_US.UTF-8
-	groupadd --gid 1001 non-root-group
-	useradd --uid 1001 --gid non-root-group -m non-root-user
-	mkdir -p /home/non-root-user/.config
-	git config --system --add safe.directory '*'
-	chown -R non-root-user:non-root-group /home/non-root-user/.config
-	apt-get clean
-	rm -rf /var/lib/apt/lists/*
-EOT
-
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 RUN <<-EOT
 	set -eux
-	mkdir -p /usr/lib/jvm/oracle8
-	curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=252034_8a1589aa0fe24566b4337beee47c2d29" | tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	sudo mkdir -p /usr/lib/jvm/oracle8
+	sudo curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=252034_8a1589aa0fe24566b4337beee47c2d29" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 EOT
 
 # Install Ubuntu's OpenJDK 17 and fix broken symlinks:
 # some files in /usr/lib/jvm/ubuntu17 are symlinks to /etc/java-17-openjdk/, so we just copy all symlinks targets.
 RUN <<-EOT
 	set -eux
-	apt-get update
-	apt-get install -y openjdk-17-jdk
-	mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
-	mkdir -p /usr/lib/jvm/ubuntu17/conf/ /usr/lib/jvm/ubuntu17/lib/
-	cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/
-	cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/
-	cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/
-	apt-get clean
-	rm -rf /var/lib/apt/lists/*
+	sudo apt-get update
+	sudo apt-get install -y openjdk-17-jdk
+	sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
+	sudo mkdir -p /usr/lib/jvm/ubuntu17/conf/ /usr/lib/jvm/ubuntu17/lib/
+	sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/
+	sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/
+	sudo cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
-	rm -rf \
+	sudo rm -rf \
 	  /usr/lib/jvm/*/man \
 	  /usr/lib/jvm/*/lib/src.zip \
 	  /usr/lib/jvm/*/demo \
 	  /usr/lib/jvm/*/sample \
 	  /usr/lib/jvm/graalvm*/lib/installer
 EOT
-
-# Switch to non-root user during runtime for security
-USER non-root-user
-WORKDIR /home/non-root-user
 
 FROM scratch AS default-jdk
 ARG LATEST_VERSION
@@ -99,34 +108,32 @@ LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-d
 RUN <<-EOT
 	set -eux
 	apt-get update
-	apt-get install -y curl tar apt-transport-https ca-certificates gnupg \
-	socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh
-	locale-gen en_US.UTF-8
+	apt-get install -y sudo
 	groupadd --gid 1001 non-root-group
 	useradd --uid 1001 --gid non-root-group -m non-root-user
+	echo "non-root-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/non-root-user
+	chmod 0440 /etc/sudoers.d/non-root-user
 	mkdir -p /home/non-root-user/.config
-	git config --system --add safe.directory '*'
 	chown -R non-root-user:non-root-group /home/non-root-user/.config
-	apt-get clean
-	rm -rf /var/lib/apt/lists/*
-	mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
+EOT
+
+USER non-root-user
+WORKDIR /home/non-root-user
+
+RUN <<-EOT
+	set -eux
+	sudo apt-get update
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh
+	sudo locale-gen en_US.UTF-8
+	sudo git config --system --add safe.directory "*"
+	sudo mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
 EOT
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-# Install Docker Compose plugin and yq YAML processor
-RUN <<-EOT
-	set -eu
-	dockerPluginDir=/usr/local/lib/docker/cli-plugins
-	curl -sSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o $dockerPluginDir/docker-compose
-	chmod +x $dockerPluginDir/docker-compose
-	update-alternatives --remove docker-compose /usr/local/bin/compose-switch
-	rm -f /usr/local/bin/compose-switch
-	curl -sSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$(dpkg --print-architecture).tar.gz" | tar -xz -C /usr/local/bin --wildcards --no-anchored 'yq_linux_*'
-	YQ_PATH=$(find /usr/local/bin -name 'yq_linux_*')
-	mv "$YQ_PATH" /usr/local/bin/yq
-	chown root:root /usr/local/bin/yq
-EOT
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
@@ -138,19 +145,15 @@ COPY autoforward.py /usr/local/bin/autoforward
 # - datadog-ci: Datadog CI tool
 RUN <<-EOT
 	set -eux
-	apt-get update
-	pip3 install --break-system-packages awscli requests requests-unixsocket2
-	pip3 cache purge
-	chmod +x /usr/local/bin/autoforward
-	curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
-	chmod +x /usr/local/bin/datadog-ci
-	apt-get clean
-	rm -rf /var/lib/apt/lists/*
+	sudo apt-get update
+	sudo pip3 install --break-system-packages awscli requests requests-unixsocket2
+	sudo pip3 cache purge
+	sudo chmod +x /usr/local/bin/autoforward
+	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
+	sudo chmod +x /usr/local/bin/datadog-ci
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
 EOT
-
-# Switch to non-root user during runtime for security
-USER non-root-user
-WORKDIR /home/non-root-user
 
 # IBM specific env variables
 ENV IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
@@ -177,7 +180,6 @@ COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
-# Switch to non-root user during runtime for security
 USER non-root-user
 WORKDIR /home/non-root-user
 
@@ -196,7 +198,6 @@ COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
 
-# Switch to non-root user during runtime for security
 USER non-root-user
 WORKDIR /home/non-root-user
 
