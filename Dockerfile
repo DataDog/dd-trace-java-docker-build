@@ -32,10 +32,10 @@ RUN <<-EOT
 	apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh
 	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-group
-	useradd --uid 1001 --gid non-root-group -m non-root-group
-	mkdir -p /home/non-root-group/.config
+	useradd --uid 1001 --gid non-root-group -m non-root-user
+	mkdir -p /home/non-root-user/.config
 	git config --system --add safe.directory '*'
-	chown -R non-root-group:non-root-group /home/non-root-group/.config
+	chown -R non-root-user:non-root-group /home/non-root-user/.config
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 EOT
@@ -74,9 +74,9 @@ RUN <<-EOT
 	  /usr/lib/jvm/graalvm*/lib/installer
 EOT
 
-# Switch to non-root group during runtime for security
-USER non-root-group
-WORKDIR /home/non-root-group
+# Switch to non-root user during runtime for security
+USER non-root-user
+WORKDIR /home/non-root-user
 
 FROM scratch AS default-jdk
 ARG LATEST_VERSION
@@ -103,10 +103,10 @@ RUN <<-EOT
 	socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh
 	locale-gen en_US.UTF-8
 	groupadd --gid 1001 non-root-group
-	useradd --uid 1001 --gid non-root-group -m non-root-group
-	mkdir -p /home/non-root-group/.config
+	useradd --uid 1001 --gid non-root-group -m non-root-user
+	mkdir -p /home/non-root-user/.config
 	git config --system --add safe.directory '*'
-	chown -R non-root-group:non-root-group /home/non-root-group/.config
+	chown -R non-root-user:non-root-group /home/non-root-user/.config
 	apt-get clean
 	rm -rf /var/lib/apt/lists/*
 	mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
@@ -148,9 +148,9 @@ RUN <<-EOT
 	rm -rf /var/lib/apt/lists/*
 EOT
 
-# Switch to non-root group during runtime for security
-USER non-root-group
-WORKDIR /home/non-root-group
+# Switch to non-root user during runtime for security
+USER non-root-user
+WORKDIR /home/non-root-user
 
 # IBM specific env variables
 ENV IBM_JAVA_OPTIONS="-XX:+UseContainerSupport"
@@ -177,9 +177,9 @@ COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
-# Switch to non-root group during runtime for security
-USER non-root-group
-WORKDIR /home/non-root-group
+# Switch to non-root user during runtime for security
+USER non-root-user
+WORKDIR /home/non-root-user
 
 # Full image for debugging, contains all JDKs.
 FROM base AS full
@@ -196,9 +196,9 @@ COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
 
-# Switch to non-root group during runtime for security
-USER non-root-group
-WORKDIR /home/non-root-group
+# Switch to non-root user during runtime for security
+USER non-root-user
+WORKDIR /home/non-root-user
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
 
