@@ -17,8 +17,8 @@ RUN <<-EOT
 	chmod 0440 /etc/sudoers.d/non-root-user
 	mkdir -p /home/non-root-user/.config
 	chown -R non-root-user:non-root-group /home/non-root-user/.config
-	sudo apt-get clean
-	sudo rm -rf /var/lib/apt/lists/*
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
 EOT
 
 USER non-root-user
@@ -27,9 +27,18 @@ WORKDIR /home/non-root-user
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
-	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh yq lsb-release
 	sudo locale-gen en_US.UTF-8
 	sudo git config --system --add safe.directory "*"
+	
+	sudo mkdir -p /tmp/docker-install
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-24.0.7.tgz" | sudo tar -xz -C /tmp/docker-install
+	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
+	sudo rm -rf /tmp/docker-install
+	sudo mkdir -p /usr/local/lib/docker/cli-plugins
+	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+	
 	sudo apt-get clean
 	sudo rm -rf /var/lib/apt/lists/*
 EOT
@@ -115,8 +124,8 @@ RUN <<-EOT
 	chmod 0440 /etc/sudoers.d/non-root-user
 	mkdir -p /home/non-root-user/.config
 	chown -R non-root-user:non-root-group /home/non-root-user/.config
-	sudo apt-get clean
-	sudo rm -rf /var/lib/apt/lists/*
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
 EOT
 
 USER non-root-user
@@ -125,10 +134,18 @@ WORKDIR /home/non-root-user
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
-	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh yq lsb-release
 	sudo locale-gen en_US.UTF-8
 	sudo git config --system --add safe.directory "*"
-	sudo mkdir -p /usr/local/lib/docker/cli-plugins /usr/local/bin
+	
+	sudo mkdir -p /tmp/docker-install
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-24.0.7.tgz" | sudo tar -xz -C /tmp/docker-install
+	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
+	sudo rm -rf /tmp/docker-install
+	sudo mkdir -p /usr/local/lib/docker/cli-plugins
+	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+	
 	sudo apt-get clean
 	sudo rm -rf /var/lib/apt/lists/*
 EOT
@@ -176,15 +193,18 @@ FROM base AS variant
 ARG VARIANT_LOWER
 ARG VARIANT_UPPER
 
+USER non-root-user
+WORKDIR /home/non-root-user
+
 COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
-USER non-root-user
-WORKDIR /home/non-root-user
-
 # Full image for debugging, contains all JDKs.
 FROM base AS full
+
+USER non-root-user
+WORKDIR /home/non-root-user
 
 COPY --from=all-jdk /usr/lib/jvm/7 /usr/lib/jvm/7
 COPY --from=all-jdk /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
@@ -197,9 +217,6 @@ COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
 COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
-
-USER non-root-user
-WORKDIR /home/non-root-user
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
 
