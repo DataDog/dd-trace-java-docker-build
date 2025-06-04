@@ -68,7 +68,7 @@ COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/gra
 RUN <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
-	sudo curl -L --fail "https://download.oracle.com/otn/java/jdk/8u441-b07/7ed26d28139143f38c58992680c214a5/jdk-8u441-linux-x64.tar.gz?AuthParam=1749061812_04c9734bb40ae3a2eebc1b5edce5453" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	sudo curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=252034_8a1589aa0fe24566b4337beee47c2d29" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 EOT
 
 # Install Ubuntu's OpenJDK 17 and fix broken symlinks:
