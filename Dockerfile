@@ -32,11 +32,11 @@ RUN <<-EOT
 	sudo git config --system --add safe.directory "*"
 	
 	sudo mkdir -p /tmp/docker-install
-	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-24.0.7.tgz" | sudo tar -xz -C /tmp/docker-install
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-28.2.2.tgz" | sudo tar -xz -C /tmp/docker-install
 	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
 	sudo rm -rf /tmp/docker-install
 	sudo mkdir -p /usr/local/lib/docker/cli-plugins
-	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.37.0/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 	
 	sudo apt-get clean
@@ -66,7 +66,7 @@ COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/gra
 
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 # Note it seems that latest Oracle JDK 8 are not available for download without an account.
-# Latest availble is jdk-8u381-linux-x64.tar.gz
+# Latest available is jdk-8u381-linux-x64.tar.gz
 RUN <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
@@ -141,11 +141,11 @@ RUN <<-EOT
 	sudo git config --system --add safe.directory "*"
 	
 	sudo mkdir -p /tmp/docker-install
-	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-24.0.7.tgz" | sudo tar -xz -C /tmp/docker-install
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-28.2.2.tgz" | sudo tar -xz -C /tmp/docker-install
 	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
 	sudo rm -rf /tmp/docker-install
 	sudo mkdir -p /usr/local/lib/docker/cli-plugins
-	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.37.0/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 	
 	sudo apt-get clean
