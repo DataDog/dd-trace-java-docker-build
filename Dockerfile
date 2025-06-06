@@ -156,18 +156,14 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 
-COPY autoforward.py /usr/local/bin/autoforward
-
 # Install the following tools
 # - awscli: AWS CLI
-# - autoforward dependencies: tool to forward request to a remote Docker deamon
 # - datadog-ci: Datadog CI tool
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
-	sudo pip3 install --break-system-packages awscli requests requests-unixsocket2
+	sudo pip3 install --break-system-packages awscli
 	sudo pip3 cache purge
-	sudo chmod +x /usr/local/bin/autoforward
 	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
 	sudo chmod +x /usr/local/bin/datadog-ci
 	sudo apt-get clean
