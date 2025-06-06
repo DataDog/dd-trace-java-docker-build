@@ -73,21 +73,6 @@ RUN <<-EOT
 	sudo curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=248746_8c876547113c4e4aab3c868e9e0ec572" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 EOT
 
-# Install Ubuntu's OpenJDK 17 and fix broken symlinks:
-# some files in /usr/lib/jvm/ubuntu17 are symlinks to /etc/java-17-openjdk/, so we just copy all symlinks targets.
-RUN <<-EOT
-	set -eux
-	sudo apt-get update
-	sudo apt-get install -y openjdk-17-jdk
-	sudo mv /usr/lib/jvm/java-17-openjdk-amd64 /usr/lib/jvm/ubuntu17
-	sudo mkdir -p /usr/lib/jvm/ubuntu17/conf/ /usr/lib/jvm/ubuntu17/lib/
-	sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/conf/
-	sudo cp -rf --remove-destination /etc/java-17-openjdk/* /usr/lib/jvm/ubuntu17/lib/
-	sudo cp -f --remove-destination /etc/java-17-openjdk/jvm-amd64.cfg /usr/lib/jvm/ubuntu17/lib/
-	sudo apt-get clean
-	sudo rm -rf /var/lib/apt/lists/*
-EOT
-
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
 	sudo rm -rf \
@@ -202,6 +187,20 @@ COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
+FROM base AS ubuntu17
+
+RUN set -eux;\
+  sudo apt-get update; \
+  sudo apt-get install -y openjdk-17-jdk; \
+  sudo apt-get -y clean; \
+  sudo rm -rf /var/lib/apt/lists/*;
+
+USER non-root-user
+WORKDIR /home/non-root-user
+
+ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_ubuntu17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
@@ -216,9 +215,17 @@ COPY --from=all-jdk /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
 COPY --from=all-jdk /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
 COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
 COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
-COPY --from=all-jdk /usr/lib/jvm/ubuntu17 /usr/lib/jvm/ubuntu17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
+
+RUN set -eux;\
+  sudo apt-get update; \
+  sudo apt-get install -y openjdk-17-jdk; \
+  sudo apt-get -y clean; \
+  sudo rm -rf /var/lib/apt/lists/*;
+
+ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_ubuntu17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
 
@@ -236,8 +243,6 @@ ENV JAVA_IBM17_HOME=/usr/lib/jvm/semeru17
 ENV JAVA_SEMERU8_HOME=/usr/lib/jvm/semeru8
 ENV JAVA_SEMERU11_HOME=/usr/lib/jvm/semeru11
 ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
-
-ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/ubuntu17
 
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17
 ENV JAVA_GRAALVM21_HOME=/usr/lib/jvm/graalvm21
