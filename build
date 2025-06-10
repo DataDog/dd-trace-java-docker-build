@@ -197,7 +197,6 @@ function do_inner_describe() {
     echo "* $(git --version)"
     echo "* $(docker --version)"
     echo "* $(docker compose version)"
-    echo "* $(yq --version)"
     echo "* datadog-ci $(datadog-ci version)"
     echo
     echo "## JDKs"
