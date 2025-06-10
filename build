@@ -102,9 +102,13 @@ function do_build() {
     for variant in "${VARIANTS[@]}"; do
         variant_upper="${variant^^}"
         variant_lower="${variant,,}"
-        docker_build variant "$(image_name "$variant_lower")" \
-            --build-arg "VARIANT_UPPER=$variant_upper" \
-            --build-arg "VARIANT_LOWER=$variant_lower"
+        if [[ $variant == "ubuntu17" ]]; then
+            docker_build ubuntu17 "$(image_name "${variant_lower}")"
+        else
+            docker_build variant "$(image_name "$variant_lower")" \
+                --build-arg "VARIANT_UPPER=$variant_upper" \
+                --build-arg "VARIANT_LOWER=$variant_lower"
+        fi
     done
 }
 

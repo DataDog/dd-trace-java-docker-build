@@ -183,6 +183,20 @@ COPY --from=all-jdk /usr/lib/jvm/${VARIANT_LOWER} /usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
+FROM base AS ubuntu17
+
+RUN set -eux;\
+  sudo apt-get update; \
+  sudo apt-get install -y openjdk-17-jdk; \
+  sudo apt-get -y clean; \
+  sudo rm -rf /var/lib/apt/lists/*;
+
+USER non-root-user
+WORKDIR /home/non-root-user
+
+ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_ubuntu17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
 # Full image for debugging, contains all JDKs.
 FROM base AS full
 
@@ -199,6 +213,15 @@ COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
 COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
+
+RUN set -eux;\
+  sudo apt-get update; \
+  sudo apt-get install -y openjdk-17-jdk; \
+  sudo apt-get -y clean; \
+  sudo rm -rf /var/lib/apt/lists/*;
+
+ENV JAVA_UBUNTU17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_ubuntu17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
 
