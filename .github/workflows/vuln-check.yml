@@ -30,7 +30,7 @@ jobs:
           docker-images: false # Do not remove locally built images (including trivy scanner)
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
+        uses: aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37 # v0.31.0
         with:
           image-ref: 'ghcr.io/datadog/dd-trace-java-docker-build:latest'
           format: 'sarif'
@@ -42,7 +42,7 @@ jobs:
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
+        uses: github/codeql-action/upload-sarif@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
