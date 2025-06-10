@@ -32,11 +32,12 @@ RUN <<-EOT
 	sudo git config --system --add safe.directory "*"
 	
 	sudo mkdir -p /tmp/docker-install
-	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-28.2.2.tgz" | sudo tar -xz -C /tmp/docker-install
+	DOCKER_LATEST_VERSION=$(curl -s https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -oP 'docker-\K([0-9]+\.[0-9]+\.[0-9]+)(?=\.tgz)' | sort -V | tail -n 1)
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-${DOCKER_LATEST_VERSION}.tgz" | sudo tar -xz -C /tmp/docker-install
 	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
 	sudo rm -rf /tmp/docker-install
 	sudo mkdir -p /usr/local/lib/docker/cli-plugins
-	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.37.0/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 	
 	sudo apt-get clean
@@ -141,11 +142,12 @@ RUN <<-EOT
 	sudo git config --system --add safe.directory "*"
 	
 	sudo mkdir -p /tmp/docker-install
-	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-28.2.2.tgz" | sudo tar -xz -C /tmp/docker-install
+	DOCKER_LATEST_VERSION=$(curl -s https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -oP 'docker-\K([0-9]+\.[0-9]+\.[0-9]+)(?=\.tgz)' | sort -V | tail -n 1)
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-${DOCKER_LATEST_VERSION}.tgz" | sudo tar -xz -C /tmp/docker-install
 	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
 	sudo rm -rf /tmp/docker-install
 	sudo mkdir -p /usr/local/lib/docker/cli-plugins
-	sudo curl -fsSL "https://github.com/docker/compose/releases/download/v2.37.0/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 	
 	sudo apt-get clean
