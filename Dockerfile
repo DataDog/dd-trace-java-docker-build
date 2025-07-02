@@ -50,7 +50,7 @@ COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-jammy /opt/java/openjdk /usr/lib/jvm/21
-COPY --from=openjdk:25-jdk-bookworm /opt/java/openjdk /usr/lib/jvm/25
+COPY --from=openjdk:25-jdk-bookworm /usr/local/openjdk-25 /usr/lib/jvm/25
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
