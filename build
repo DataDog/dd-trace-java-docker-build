@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21 stable 25) # 25 is currently an ea variant
+readonly BASE_VARIANTS=(8 11 17 21 25 stable) # add an ea variant once the early access build is available
 
 readonly VARIANTS=(
     7
@@ -158,8 +158,8 @@ function do_inner_test() {
     "$JAVA_11_HOME/bin/java" -version
     "$JAVA_17_HOME/bin/java" -version
     "$JAVA_21_HOME/bin/java" -version
-    "${!java_latest_home}/bin/java" -version
     "$JAVA_25_HOME/bin/java" -version
+    "${!java_latest_home}/bin/java" -version
     if [[ $variant != base && $variant != latest ]]; then
         if [[ $variant == "stable" ]]; then
             variant_lower="${LATEST_VERSION}"
