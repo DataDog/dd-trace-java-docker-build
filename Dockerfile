@@ -4,7 +4,7 @@ ARG LATEST_VERSION
 FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
-FROM ubuntu:24.04 AS all-jdk
+FROM ubuntu:latest AS all-jdk
 ARG LATEST_VERSION
 
 RUN <<-EOT
