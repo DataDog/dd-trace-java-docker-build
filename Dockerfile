@@ -66,6 +66,7 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm
 
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
+COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
 
 # See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
 # Note it seems that latest Oracle JDK 8 are not available for download without an account.
@@ -205,6 +206,7 @@ COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
 COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
 COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
+COPY --from=all-jdk /usr/lib/jvm/graalvm25 /usr/lib/jvm/graalvm25
 
 ENV JAVA_7_HOME=/usr/lib/jvm/7
 
@@ -225,3 +227,4 @@ ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
 
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17
 ENV JAVA_GRAALVM21_HOME=/usr/lib/jvm/graalvm21
+ENV JAVA_GRAALVM25_HOME=/usr/lib/jvm/graalvm25

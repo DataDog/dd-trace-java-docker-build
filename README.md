@@ -8,7 +8,7 @@ Pre-built images are available in [GitHub Container Registry](https://github.com
 
 Image variants are available on a per JDK basis:
 - The `base` variant, and its aliases `8`, `11`, `17`, `21`, `25`, and `stable`, contains the base Eclipse Temurin JDK 8, 11, 17, 21, 25 early access, and latest stable JDK versions,
-- The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17` and `graalvm21` variants all contain the base JDKs in addition to the specific JDK from their name,
+- The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17`, `graalvm21`, and `graalvm25` variants all contain the base JDKs in addition to the specific JDK from their name,
 - The `latest` variant contains the base JDKs and all the above specific JDKs.
 
 ## Development
