@@ -16,6 +16,7 @@ readonly VARIANTS=(
     semeru17
     graalvm17
     graalvm21
+    graalvm25
 )
 
 # Use buildkit to match CI as closely as possible.
