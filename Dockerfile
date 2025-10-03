@@ -149,6 +149,7 @@ COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 # Install the following tools
 # - awscli: AWS CLI
 # - datadog-ci: Datadog CI tool
+# - vault: tool for managing secrets: https://datadoghq.atlassian.net/wiki/spaces/RUNTIME/pages/2701559033/Vault
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
@@ -159,7 +160,7 @@ RUN <<-EOT
 	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
 	sudo chmod +x /usr/local/bin/datadog-ci
 
-	# vault
+	# vault installation inspired by https://github.com/DataDog/datadog-agent-buildimages/blob/main/agent-deploy/Dockerfile
 	VAULT_VERSION=1.20.4
 	curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip" -o vault.zip
 	unzip vault.zip
