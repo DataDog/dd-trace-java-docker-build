@@ -200,6 +200,7 @@ function do_inner_describe() {
     echo "* $(docker --version)"
     echo "* $(docker compose version)"
     echo "* datadog-ci $(datadog-ci version)"
+    echo "* vault $(vault --version)"
     echo
     echo "## JDKs"
     echo
