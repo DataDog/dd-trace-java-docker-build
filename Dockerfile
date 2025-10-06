@@ -125,7 +125,7 @@ WORKDIR /home/non-root-user
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
-	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh yq lsb-release lsof
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh yq lsb-release lsof unzip
 	sudo locale-gen en_US.UTF-8
 	sudo git config --system --add safe.directory "*"
 	
@@ -149,13 +149,25 @@ COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
 # Install the following tools
 # - awscli: AWS CLI
 # - datadog-ci: Datadog CI tool
+# - vault: tool for managing secrets: https://datadoghq.atlassian.net/wiki/spaces/RUNTIME/pages/2701559033/Vault
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
 	sudo pip3 install --break-system-packages awscli
 	sudo pip3 cache purge
+
+	# datadog-ci
 	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
 	sudo chmod +x /usr/local/bin/datadog-ci
+
+	# vault installation inspired by https://github.com/DataDog/datadog-agent-buildimages/blob/main/agent-deploy/Dockerfile
+	VAULT_VERSION=1.20.4
+	curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip" -o vault.zip
+	unzip vault.zip
+	sudo mv vault /usr/local/bin/vault
+	chmod +x /usr/local/bin/vault
+	rm vault.zip
+
 	sudo apt-get clean
 	sudo rm -rf /var/lib/apt/lists/*
 EOT
