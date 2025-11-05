@@ -73,7 +73,7 @@ COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/gr
 RUN <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
-	sudo curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=248746_8c876547113c4e4aab3c868e9e0ec572" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+    sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
