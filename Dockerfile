@@ -71,20 +71,24 @@ COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/gr
 # Note:
 # 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
 # 2. Once created, token should be added to GitHub protected environment by repository administrator.
-RUN <<-EOT
+RUN --mount=type=secret,id=oracle_java8_token <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
+	# turn off tracing before touching secrets
+	set +x
+	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	unset ORACLE_JAVA8_TOKEN
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
 	sudo rm -rf \
-	  /usr/lib/jvm/*/man \
-	  /usr/lib/jvm/*/lib/src.zip \
-	  /usr/lib/jvm/*/demo \
-	  /usr/lib/jvm/*/sample \
-	  /usr/lib/jvm/graalvm*/lib/installer
+		/usr/lib/jvm/*/man \
+		/usr/lib/jvm/*/lib/src.zip \
+		/usr/lib/jvm/*/demo \
+		/usr/lib/jvm/*/sample \
+		/usr/lib/jvm/graalvm*/lib/installer
 EOT
 
 FROM scratch AS default-jdk
