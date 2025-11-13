@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.6
 
-FROM ubuntu:latest AS oracle8
+ARG LATEST_VERSION
+FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 # See: Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
 # Note:
 # 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
@@ -15,9 +16,6 @@ RUN --mount=type=secret,id=oracle_java8_token <<-EOT
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
 EOT
-
-ARG LATEST_VERSION
-FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM ubuntu:latest AS all-jdk
