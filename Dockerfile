@@ -67,9 +67,10 @@ COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/gra
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
 
-# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
-# Note it seems that latest Oracle JDK 8 are not available for download without an account.
-# Latest available is jdk-8u381-linux-x64.tar.gz
+# See: Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
+# Note:
+# 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
+# 2. Once created, token should be added to GitHub protected environment by repository administrator.
 RUN <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
