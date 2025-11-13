@@ -1,5 +1,21 @@
 # syntax=docker/dockerfile:1.6
 
+FROM ubuntu:latest AS oracle8
+# See: Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
+# Note:
+# 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
+# 2. Once created, token should be added to GitHub protected environment by repository administrator.
+RUN id non-root-user
+RUN --mount=type=secret,id=oracle_java8_token <<-EOT
+	set -eux
+	sudo mkdir -p /usr/lib/jvm/oracle8
+	# turn off tracing before touching secrets
+	set +x
+	sudo ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
+	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	unset ORACLE_JAVA8_TOKEN
+EOT
+
 ARG LATEST_VERSION
 FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 
@@ -67,19 +83,6 @@ COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/gra
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
 
-# See: Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
-# Note:
-# 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
-# 2. Once created, token should be added to GitHub protected environment by repository administrator.
-RUN --mount=type=secret,id=oracle_java8_token <<-EOT
-	set -eux
-	sudo mkdir -p /usr/lib/jvm/oracle8
-	# turn off tracing before touching secrets
-	set +x
-	sudo ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
-	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
-	unset ORACLE_JAVA8_TOKEN
-EOT
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
