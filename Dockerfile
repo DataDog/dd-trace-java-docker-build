@@ -76,7 +76,7 @@ RUN --mount=type=secret,id=oracle_java8_token <<-EOT
 	sudo mkdir -p /usr/lib/jvm/oracle8
 	# turn off tracing before touching secrets
 	set +x
-	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
+	sudo ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
 EOT
