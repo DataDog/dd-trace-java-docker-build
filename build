@@ -72,7 +72,7 @@ function docker_build() {
     shift
     docker build \
         --build-arg LATEST_VERSION=$LATEST_VERSION \
-        --build-arg ORACLE_JAVA8_TOKEN=$ORACLE_JAVA8_TOKEN \
+        --secret id=oracle_java8_token,env=ORACLE_JAVA8_TOKEN \
         --platform linux/amd64 \
         --label org.opencontainers.image.created="$BUILD_DATE" \
         --label org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build \
