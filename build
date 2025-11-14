@@ -66,15 +66,13 @@ function compute_latest_version() {
 # See https://github.com/opencontainers/image-spec/blob/main/annotations.md for common labels
 # See https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
 function docker_build() {
-    echo "DEBUG: $ORACLE_JAVA8_TOKEN" >> "$GITHUB_OUTPUT"
-
     local target="$1"
     local tag="$2"
     shift
     shift
     docker build \
         --build-arg LATEST_VERSION=$LATEST_VERSION \
-        --secret id=oracle_java8_token,env=ORACLE_JAVA8_TOKEN \
+        --build-arg ORACLE_JAVA8_TOKEN=ORACLE_JAVA8_TOKEN \
         --platform linux/amd64 \
         --label org.opencontainers.image.created="$BUILD_DATE" \
         --label org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build \

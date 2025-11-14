@@ -6,6 +6,7 @@ FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM ubuntu:latest AS all-jdk
 ARG LATEST_VERSION
+ARG ORACLE_JAVA8_TOKEN
 
 RUN <<-EOT
 	set -eux
@@ -71,13 +72,9 @@ WORKDIR /home/non-root-user
 # Note:
 # 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
 # 2. Once created, token should be added to GitHub protected environment by repository administrator.
-RUN id non-root-user
-RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
+RUN <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
-	# turn off tracing before touching secrets
-	# debug set +x
-	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
 	echo $ORACLE_JAVA8_TOKEN
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
