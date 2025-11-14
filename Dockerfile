@@ -75,7 +75,7 @@ WORKDIR /home/non-root-user
 RUN <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
-	echo $ORACLE_JAVA8_TOKEN
+	echo "token is: $ORACLE_JAVA8_TOKEN"
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
 EOT
