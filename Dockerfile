@@ -67,7 +67,9 @@ COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/gra
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
 
-# See: Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
+# See:
+# 1. Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
+# 2. DataDog and Oracle Partnership: https://datadoghq.atlassian.net/wiki/spaces/APMINT/pages/2710931486/Oracle+Partner+Network
 # Note:
 # 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
 # 2. Once created, token should be added to GitHub protected environment by repository administrator.
