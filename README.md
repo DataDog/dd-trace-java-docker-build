@@ -1,6 +1,6 @@
 # dd-trace-java-docker-build
 
-This library holds Docker images for continuous integration jobs at [dd-trace-java](https://github.com/datadog/dd-trace-java).
+This repository holds Docker images for continuous integration jobs at [dd-trace-java](https://github.com/datadog/dd-trace-java).
 
 ## Usage
 
