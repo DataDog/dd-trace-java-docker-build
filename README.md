@@ -11,7 +11,7 @@ Image variants are available on a per JDK basis:
 - The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17`, `graalvm21`, and `graalvm25` variants all contain the base JDKs in addition to the specific JDK from their name,
 - The `latest` variant contains the base JDKs and all the above specific JDKs.
 
-Images are tagged via the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow. This workflow tags the latest images built on the inputted branch with the `vYY.MM` format. It is scheduled to run on `master` on a quarterly basis but can also be manually triggered when warranted.
+Images are tagged via the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow. This workflow tags the latest images built from the specified branch using the `vYY.MM` format. It runs quarterly on `master` but can also be triggered manually as needed.
 
 ## Development
 
