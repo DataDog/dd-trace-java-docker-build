@@ -51,6 +51,8 @@ COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
+# TODO: Update to more stable version once released. GA ETA is Mar 17 2026.
+COPY --from=openjdk:26-ea-jdk-bookworm /usr/local/openjdk-26 /usr/lib/jvm/26
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
@@ -99,6 +101,7 @@ COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
 COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 COPY --from=all-jdk /usr/lib/jvm/25 /usr/lib/jvm/25
+COPY --from=all-jdk /usr/lib/jvm/26 /usr/lib/jvm/26
 COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION}
 
 # Base image with minimum requirements to build the project.
@@ -190,6 +193,7 @@ ENV JAVA_11_HOME=/usr/lib/jvm/11
 ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_21_HOME=/usr/lib/jvm/21
 ENV JAVA_25_HOME=/usr/lib/jvm/25
+ENV JAVA_26_HOME=/usr/lib/jvm/26
 ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
 
 ENV JAVA_HOME=${JAVA_8_HOME}
