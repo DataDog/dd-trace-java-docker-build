@@ -30,7 +30,7 @@ RUN <<-EOT
 	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg locales jq git gh yq lsb-release lsof
 	sudo locale-gen en_US.UTF-8
 	sudo git config --system --add safe.directory "*"
-	
+
 	sudo mkdir -p /tmp/docker-install
 	DOCKER_LATEST_VERSION=$(curl -s https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -oP 'docker-\K([0-9]+\.[0-9]+\.[0-9]+)(?=\.tgz)' | sort -V | tail -n 1)
 	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-${DOCKER_LATEST_VERSION}.tgz" | sudo tar -xz -C /tmp/docker-install
@@ -39,17 +39,17 @@ RUN <<-EOT
 	sudo mkdir -p /usr/local/lib/docker/cli-plugins
 	sudo curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-	
+
 	sudo apt-get clean
 	sudo rm -rf /var/lib/apt/lists/*
 EOT
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-COPY --from=eclipse-temurin:8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/8
-COPY --from=eclipse-temurin:11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/11
-COPY --from=eclipse-temurin:17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/17
-COPY --from=eclipse-temurin:21-jdk-jammy /opt/java/openjdk /usr/lib/jvm/21
+COPY --from=eclipse-temurin:8-jdk-noble /opt/java/openjdk /usr/lib/jvm/8
+COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
+COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
+COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
@@ -59,31 +59,36 @@ COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 
 COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 
-COPY --from=ibm-semeru-runtimes:open-8-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru8
-COPY --from=ibm-semeru-runtimes:open-11-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru11
-COPY --from=ibm-semeru-runtimes:open-17-jdk-jammy /opt/java/openjdk /usr/lib/jvm/semeru17
+COPY --from=ibm-semeru-runtimes:open-8-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru8
+COPY --from=ibm-semeru-runtimes:open-11-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru11
+COPY --from=ibm-semeru-runtimes:open-17-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru17
 
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
 
-# See: https://gist.github.com/wavezhang/ba8425f24a968ec9b2a8619d7c2d86a6
-# Note it seems that latest Oracle JDK 8 are not available for download without an account.
-# Latest available is jdk-8u381-linux-x64.tar.gz
-RUN <<-EOT
+# See:
+# 1. Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
+# 2. DataDog and Oracle Partnership: https://datadoghq.atlassian.net/wiki/spaces/APMINT/pages/2710931486/Oracle+Partner+Network
+# Note:
+# 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
+# 2. Once created, token should be added to GitHub protected environment by repository administrator.
+RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
-	sudo curl -L --fail "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=248746_8c876547113c4e4aab3c868e9e0ec572" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
+	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	unset ORACLE_JAVA8_TOKEN
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
 	sudo rm -rf \
-	  /usr/lib/jvm/*/man \
-	  /usr/lib/jvm/*/lib/src.zip \
-	  /usr/lib/jvm/*/demo \
-	  /usr/lib/jvm/*/sample \
-	  /usr/lib/jvm/graalvm*/lib/installer
+		/usr/lib/jvm/*/man \
+		/usr/lib/jvm/*/lib/src.zip \
+		/usr/lib/jvm/*/demo \
+		/usr/lib/jvm/*/sample \
+		/usr/lib/jvm/graalvm*/lib/installer
 EOT
 
 FROM scratch AS default-jdk

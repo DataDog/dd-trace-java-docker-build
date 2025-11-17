@@ -18,6 +18,8 @@ jobs:
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
       packages: write # for image publication to GitHub Packages
     runs-on: ubuntu-latest
+    environment:
+      name: ci-build
     steps:
       - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
@@ -36,6 +38,8 @@ jobs:
           docker-images: false # Do not remove locally built images (including trivy scanner)
       - name: Build images
         id: build
+        env:
+          ORACLE_JAVA8_TOKEN: ${{ secrets.ORACLE_JAVA8_TOKEN }}
         run: ./build
       - name: Test images
         run: ./build --test
