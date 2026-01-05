@@ -79,6 +79,7 @@ RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
 	set -eux
 	sudo mkdir -p /usr/lib/jvm/oracle8
 	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
+	echo "oracle_java8_token length: ${#ORACLE_JAVA8_TOKEN}" 1>&2
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
 EOT
