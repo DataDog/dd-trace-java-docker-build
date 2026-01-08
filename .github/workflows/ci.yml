@@ -22,12 +22,12 @@ jobs:
       name: ci-build
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # 5.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # 6.0.1
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # 3.11.1
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # 3.12.0
       - name: Login to ghcr.io
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # 3.5.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # 3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -59,6 +59,6 @@ jobs:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@f1f6e5f6af878fb37288ce1c627459e94dbf7d01 # v3.30.1
+        uses: github/codeql-action/upload-sarif@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
         with:
           sarif_file: 'trivy-results.sarif'
