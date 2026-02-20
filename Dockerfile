@@ -52,7 +52,7 @@ COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
 # TODO: Update to more stable version once released. GA ETA is Mar 17 2026.
-COPY --from=openjdk:26-ea-jdk-bookworm /usr/local/openjdk-26 /usr/lib/jvm/26
+COPY --from=openjdk:26-rc-jdk-bookworm /usr/local/openjdk-26 /usr/lib/jvm/26
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
@@ -86,7 +86,6 @@ EOT
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
 	sudo rm -rf \
-		/usr/lib/jvm/*/man \
 		/usr/lib/jvm/*/lib/src.zip \
 		/usr/lib/jvm/*/demo \
 		/usr/lib/jvm/*/sample \
