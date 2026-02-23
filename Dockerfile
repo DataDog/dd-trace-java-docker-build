@@ -86,7 +86,6 @@ EOT
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
 	sudo rm -rf \
-		/usr/lib/jvm/*/man \
 		/usr/lib/jvm/*/lib/src.zip \
 		/usr/lib/jvm/*/demo \
 		/usr/lib/jvm/*/sample \
