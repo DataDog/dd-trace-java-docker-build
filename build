@@ -19,6 +19,8 @@ readonly VARIANTS=(
     graalvm25
 )
 
+readonly LATEST_VERSION="24"
+
 # Use buildkit to match CI as closely as possible.
 export DOCKER_BUILDKIT=1
 
@@ -43,23 +45,6 @@ function compute_metadata() {
     # Cache the same RFC 3339 timestamp for re-use in all images built in the same batch.
     BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
     GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
-}
-
-function compute_latest_version() {
-    # Java versions are typically released towards the end of the month in March and September,
-    # so we use the version from the previous release cycle until the month after the release.
-    local base_year=2025
-    local base_version=23
-
-    version="$((base_version + ($(date +%Y) - base_year) * 2))"
-    if [ "$(date +%m)" -ge 4 ]; then
-        version="$((version + 1))"
-    fi
-    if [ "$(date +%m)" -ge 10 ]; then
-        version="$((version + 1))"
-    fi
-
-    export LATEST_VERSION="$version"
 }
 
 # docker build wrapper with common arguments
@@ -90,7 +75,6 @@ function image_name() {
 
 function do_build() {
     compute_metadata
-    compute_latest_version
     docker_build base "$(image_name base)"
     docker_build full "$(image_name latest)"
     if [ -n "${GITHUB_OUTPUT+unset}" ]; then
