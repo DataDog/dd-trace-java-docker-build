@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21 25 tip)
+readonly BASE_VARIANTS=(8 11 17 21 25 26 tip) # TODO: Remove 26 after officially released (tip will then refer to 26)
 
 readonly VARIANTS=(
     7
