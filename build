@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21 25 26 stable)
+readonly BASE_VARIANTS=(8 11 17 21 25 26 tip) # TODO: Remove 26 after officially released (tip will then refer to 26)
 
 readonly VARIANTS=(
     7
@@ -164,7 +164,7 @@ function do_inner_test() {
     "$JAVA_26_HOME/bin/java" -version
     "${!java_latest_home}/bin/java" -version
     if [[ $variant != base && $variant != latest ]]; then
-        if [[ $variant == "stable" ]]; then
+        if [[ $variant == "tip" ]]; then
             variant_lower="${LATEST_VERSION}"
             variant_upper="${LATEST_VERSION}"
         fi
@@ -207,7 +207,7 @@ function do_inner_describe() {
     echo "## JDKs"
     echo
     for variant in "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
-        if [[ $variant == "stable" ]]; then
+        if [[ $variant == "tip" ]]; then
             variant_upper="${LATEST_VERSION}"
         else
             variant_upper="${variant^^}"
