@@ -11,6 +11,8 @@ Image variants are available on a per JDK basis:
 - The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17`, `graalvm21`, and `graalvm25` variants all contain the base JDKs in addition to the specific JDK from their name.
 - The `latest` variant contains the base JDKs and all of the specific JDKs above.
 
+Images are tagged via the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow. This workflow tags the latest images built from the specified branch with a `ci-` prefix. It runs quarterly on `master` but can also be triggered manually as needed.
+
 ## Development
 
 To build all the Docker images:
@@ -31,7 +33,7 @@ Images are built per PR for ease in testing. These test images are prefixed with
 
 To test these images in `dd-trace-java` CI:
 
-1. Open a PR in [DataDog/dd-trace-java-docker-build](https://github.com/DataDog/dd-trace-java-docker-build) with the changes you want to test. It's important that this PR is opened on the latest tip of `master` to ensure that the test images are up-to-date. Let's say these changes are made in PR #123.
+1. Open a PR in [DataDog/dd-trace-java-docker-build](https://github.com/DataDog/dd-trace-java-docker-build) with the changes you want to test. Let's say these changes are made in PR #123 ([example](https://github.com/DataDog/dd-trace-java-docker-build/pull/123)).
 2. Run the [generate-test-image-yaml](https://github.com/DataDog/dd-trace-java-docker-build/tree/master/scripts/generate-test-image-yaml.sh) script to generate the YAML snippets that you will need in the following steps:
 ```bash
 ./scripts/generate-test-image-yaml.sh 123
@@ -42,7 +44,7 @@ Note that the test images have `renovate` enabled. This means that any changes t
 ```bash
 docker pull registry.ddbuild.io/images/mirror/datadog/dd-trace-java-docker-build:123_merge-base
 ```
-4. Open a PR in [DataDog/dd-trace-java](https://github.com/DataDog/dd-trace-java) that updates the `TESTER_IMAGE_VERSION_PREFIX` variable according to the output from step 2. Here, you can check your test images with `DataDog/dd-trace-java` CI.
+4. Open a PR in [DataDog/dd-trace-java](https://github.com/DataDog/dd-trace-java) that updates the `BUILDER_IMAGE_VERSION_PREFIX` variable according to the output from step 2. Here, you can check your test images with `DataDog/dd-trace-java` CI.
 5. For each following change made to your original PR #123, ensure the test image (i.e. prefixed with `123_merge-`) SHAs in `DataDog/images` are updated. This should be done via the bot mentioned in step 2 but can also be updated manually.
 6. When the test images look good and `DataDog/dd-trace-java` CI is green, merge your `DataDog/dd-trace-java-docker-build` PR #123, close the test `DataDog/dd-trace-java` PR, and **revert the `DataDog/images` PR**.
-7. Finally, confirm that the original image (i.e. no prefix) SHAs in `DataDog/images` are updated.
+7. Finally, run the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow and confirm that the corresponding image (i.e. `ci-` prefix) SHAs in `DataDog/images` are updated.
