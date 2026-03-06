@@ -132,7 +132,7 @@ WORKDIR /home/non-root-user
 RUN <<-EOT
 	set -eux
 	sudo apt-get update
-	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh yq lsb-release lsof unzip parallel
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh yq lsb-release lsof unzip parallel xsltproc
 	sudo locale-gen en_US.UTF-8
 	sudo git config --system --add safe.directory "*"
 	
