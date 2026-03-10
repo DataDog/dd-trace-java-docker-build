@@ -11,7 +11,7 @@ Image variants are available on a per JDK basis:
 - The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17`, `graalvm21`, and `graalvm25` variants all contain the base JDKs in addition to the specific JDK from their name.
 - The `latest` variant contains the base JDKs and all of the specific JDKs above.
 
-Images are tagged via the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow. This workflow tags the latest images built from the specified branch with a `ci-` prefix. It runs quarterly on `master` but can also be triggered manually as needed.
+Images are tagged via the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow. This workflow tags the latest images built from the specified branch with a `ci-` prefix and triggers the [Update mirror digests for ci-* images](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/update-mirror-digests.yml) workflow which automatically creates a PR that updates the pinned `ci-*` image digests in `DataDog/images`. It runs quarterly on `master` but can also be triggered manually as needed.
 
 ## Development
 
@@ -34,17 +34,8 @@ Images are built per PR for ease in testing. These test images are prefixed with
 To test these images in `dd-trace-java` CI:
 
 1. Open a PR in [DataDog/dd-trace-java-docker-build](https://github.com/DataDog/dd-trace-java-docker-build) with the changes you want to test. Let's say these changes are made in PR #123 ([example](https://github.com/DataDog/dd-trace-java-docker-build/pull/123)).
-2. Run the [generate-test-image-yaml](https://github.com/DataDog/dd-trace-java-docker-build/tree/master/scripts/generate-test-image-yaml.sh) script to generate the YAML snippets that you will need in the following steps:
-```bash
-./scripts/generate-test-image-yaml.sh 123
-```
-Note that the test images have `renovate` enabled. This means that any changes to your upstream image (i.e. `DataDog/dd-trace-java-docker-build` PR images) will be auto-updated in `DataDog/images`. The update is done via a bot ([example](https://github.com/DataDog/images/pull/8756)).
-
-3. Open a PR in [DataDog/images](https://github.com/DataDog/images) that adds the generated snippets to the corresponding files. This PR should be automatically merged with the `dd-prapprover` bot. If not, then manually merge the PR. The images should be generated a few minutes after the PR lands on `master`. One way to confirm this is by pulling a test image locally, e.g. by running:
-```bash
-docker pull registry.ddbuild.io/images/mirror/datadog/dd-trace-java-docker-build:123_merge-base
-```
-4. Open a PR in [DataDog/dd-trace-java](https://github.com/DataDog/dd-trace-java) that updates the `BUILDER_IMAGE_VERSION_PREFIX` variable according to the output from step 2. Here, you can check your test images with `DataDog/dd-trace-java` CI.
-5. For each following change made to your original PR #123, ensure the test image (i.e. prefixed with `123_merge-`) SHAs in `DataDog/images` are updated. This should be done via the bot mentioned in step 2 but can also be updated manually.
-6. When the test images look good and `DataDog/dd-trace-java` CI is green, merge your `DataDog/dd-trace-java-docker-build` PR #123, close the test `DataDog/dd-trace-java` PR, and **revert the `DataDog/images` PR**.
-7. Finally, run the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow and confirm that the corresponding image (i.e. `ci-` prefix) SHAs in `DataDog/images` are updated.
+2. Run the [Create test image mirror PR](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/create-test-mirror-pr.yml) workflow with `pr_number=123`. This automatically opens a PR in [DataDog/images](https://github.com/DataDog/images) that adds mirror entries for the `123_merge-*` test images. The PR should be automatically merged by the `dd-prapprover` bot.
+3. Open a PR in [DataDog/dd-trace-java](https://github.com/DataDog/dd-trace-java) that sets `BUILDER_IMAGE_VERSION_PREFIX: "123_merge-"` in `.gitlab-ci.yml`. Here, you can check your test images with `DataDog/dd-trace-java` CI.
+4. Every time you want to test changes made in PR #123, ensure the test image SHAs in `DataDog/images` are updated. This should be done by running the [Create test image mirror PR](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/create-test-mirror-pr.yml) workflow with `pr_number=123`.
+5. When the test images look good and `DataDog/dd-trace-java` CI is green, merge your `DataDog/dd-trace-java-docker-build` PR #123, close the test `DataDog/dd-trace-java` PR, and **remove the test images from the `DataDog/images` repo**.
+6. Finally, run the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow. The [Update mirror digests for ci-* images](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/update-mirror-digests.yml) workflow will automatically open a PR in `DataDog/images`, updating the pinned `ci-*` digests.
