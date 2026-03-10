@@ -233,7 +233,7 @@ function do_push() {
 }
 
 function do_tag() {
-    local tag token version
+    local tag
     TAG_PREFIX=
     echo "Pulling latest images"
     for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
@@ -241,12 +241,11 @@ function do_tag() {
         tag="$(image_name "${tag}")"
         docker pull "$tag"
     done
-    version="$(date +%y.%m)"
-    echo "Tagging version $version"
+    echo "Tagging ci- images"
     for tag in base latest "${BASE_VARIANTS[@]}" "${VARIANTS[@]}"; do
         tag="${tag,,}"
         tag="$(image_name "${tag}")"
-        new_tag="${tag/:/:v$version-}"
+        new_tag="${tag/:/:ci-}"
         docker tag "$tag" "$new_tag"
         docker push "$new_tag"
     done
