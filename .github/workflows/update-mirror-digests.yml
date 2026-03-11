@@ -20,15 +20,22 @@ jobs:
           scope: DataDog/images
           policy: dd-trace-java-docker-build.update-mirror
 
+      - name: Checkout DataDog/dd-trace-java-docker-build
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: dd-trace-java-docker-build
+
       - name: Checkout DataDog/images
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: DataDog/images
           token: ${{ steps.octo-sts.outputs.token }}
+          path: images
 
       - name: Capture images HEAD SHA
         id: images-head
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: images
 
       - name: Install crane
         run: |
@@ -38,17 +45,17 @@ jobs:
           sudo mv crane /usr/local/bin/crane
           rm crane.tar.gz
 
-      - name: Get baseline digest for ci-base image
+      - name: Get baseline digest for ci-base image # base variant used to check freshness
         id: baseline
         run: |
-          BASELINE=$(awk '/source:.*dd-trace-java-docker-build:ci-base/{found=1; next} found && /digest:/{print $2; exit}' mirror.lock.yaml || true)
+          BASELINE=$(awk '/source:.*dd-trace-java-docker-build:ci-base/{found=1; next} found && /digest:/{print $2; exit}' images/mirror.lock.yaml || true)
           echo "digest=${BASELINE}" >> "$GITHUB_OUTPUT"
           echo "Baseline ci-base digest: ${BASELINE:-<none found>}"
 
       - name: Wait for new ci-base image to be published
         run: |
           BASELINE="${{ steps.baseline.outputs.digest }}"
-          DEADLINE=$((SECONDS + 1800)) # 30 min timeout
+          DEADLINE=$((SECONDS + 1800))
           echo "Waiting for ci-base digest to differ from: ${BASELINE:-<none>}"
           while [[ $SECONDS -lt $DEADLINE ]]; do
             CURRENT=$(crane digest ghcr.io/datadog/dd-trace-java-docker-build:ci-base 2>/dev/null || true)
@@ -59,91 +66,35 @@ jobs:
             echo "No change yet (current: ${CURRENT:-unavailable}), retrying in 60s..."
             sleep 60
           done
-          echo "::error::Timeout after 30 minutes: ci-base digest did not change"
+          echo "::error::Timeout after 30 minutes: ci-base digest did not change from existing mirror"
           exit 1
 
-      - name: Resolve digests and update mirror files
-        run: |
-          python3 - <<'PYEOF'
-          import subprocess, re
-
-          SOURCE_REPO = "ghcr.io/datadog/dd-trace-java-docker-build"
-          VARIANTS = [
-              "base", "7", "8", "11", "17", "21", "25", "tip",
-              "zulu8", "zulu11", "oracle8", "ibm8",
-              "semeru8", "semeru11", "semeru17",
-              "graalvm17", "graalvm21", "graalvm25",
-          ]
-
-          # Verify all ci-* entries are already present in both files before proceeding
-          with open("mirror.yaml", "r") as f:
-              yaml_content = f.read()
-          with open("mirror.lock.yaml", "r") as f:
-              lock_content = f.read()
-
-          missing_yaml = [v for v in VARIANTS if f"{SOURCE_REPO}:ci-{v}" not in yaml_content]
-          missing_lock = [v for v in VARIANTS if f"{SOURCE_REPO}:ci-{v}" not in lock_content]
-          if missing_yaml or missing_lock:
-              if missing_yaml:
-                  print(f"::error::ci-* entries missing from mirror.yaml: {missing_yaml}")
-              if missing_lock:
-                  print(f"::error::ci-* entries missing from mirror.lock.yaml: {missing_lock}")
-              print("Bootstrap the ci-* entries manually before running this workflow.")
-              raise SystemExit(1)
-
-          print("Resolving digests for ci-* variants...")
-          digests = {}
-          for variant in VARIANTS:
-              tag = f"ci-{variant}"
-              result = subprocess.run(
-                  ["crane", "digest", f"{SOURCE_REPO}:{tag}"],
-                  capture_output=True, text=True, check=True,
-              )
-              digest = result.stdout.strip()
-              digests[variant] = digest
-              print(f"  {tag}: {digest}")
-
-          # Update existing digest entries in mirror.lock.yaml in-place
-          for variant in VARIANTS:
-              tag = f"ci-{variant}"
-              source = f"{SOURCE_REPO}:{tag}"
-              digest = digests[variant]
-              pattern = rf"(    - source: {re.escape(source)}\n      digest: )sha256:[a-f0-9]+"
-              lock_content = re.sub(pattern, rf"\g<1>{digest}", lock_content)
-              print(f"Updated mirror.lock.yaml: {tag}")
-
-          with open("mirror.lock.yaml", "w") as f:
-              f.write(lock_content)
-
-          PYEOF
-
-      - name: Check for changes
-        id: check-changes
-        run: |
-          if [[ -z "$(git status -s)" ]]; then
-            echo "No changes to commit."
-            echo "commit_changes=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "commit_changes=true" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Resolve digests and update mirror.lock.yaml files
+        run: bash "${GITHUB_WORKSPACE}/dd-trace-java-docker-build/scripts/update-ci-image-digests.sh"
+        working-directory: images
 
       - name: Define branch name
-        if: steps.check-changes.outputs.commit_changes == 'true'
         id: define-branch
         run: echo "branch=ci/update-dd-trace-java-docker-build-ci-digests-$(date +'%Y%m%d')" >> "$GITHUB_OUTPUT"
 
       - name: Commit changes
-        if: steps.check-changes.outputs.commit_changes == 'true'
         id: create-commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mirror.yaml mirror.lock.yaml
+          git add mirror.lock.yaml
+          if git diff --cached --quiet; then
+            echo "No changes detected in mirror files; skipping commit."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           git commit -m "chore: Update dd-trace-java-docker-build ci-* image digests"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: images
 
       - name: Push changes
-        if: steps.check-changes.outputs.commit_changes == 'true'
+        if: ${{ steps.create-commit.outputs.has_changes == 'true' }}
         uses: DataDog/commit-headless@05d7b7ee023e2c7d01c47832d420c2503cd416f3 # action/v2.0.3
         with:
           token: "${{ steps.octo-sts.outputs.token }}"
@@ -152,9 +103,10 @@ jobs:
           create-branch: true
           command: push
           commits: "${{ steps.create-commit.outputs.commit }}"
+          working-directory: images
 
       - name: Create pull request
-        if: steps.check-changes.outputs.commit_changes == 'true'
+        if: ${{ steps.create-commit.outputs.has_changes == 'true' }}
         env:
           GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
         run: |
