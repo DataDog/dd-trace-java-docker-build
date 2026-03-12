@@ -82,7 +82,6 @@ jobs:
         run: |
           gh pr create \
             --repo DataDog/images \
-            --draft \
             --title "Remove dd-trace-java-docker-build test images for PR #${PR_NUMBER}" \
             --base master \
             --head "${{ steps.define-branch.outputs.branch }}" \
