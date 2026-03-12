@@ -1,0 +1,116 @@
+name: Create test image mirror PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number in dd-trace-java-docker-build (e.g. 123)"
+        required: true
+
+jobs:
+  create-test-mirror-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC token federation
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: DataDog/dd-octo-sts-action@acaa02eee7e3bb0839e4272dacb37b8f3b58ba80 # v1.0.3
+        id: octo-sts
+        with:
+          scope: DataDog/images
+          policy: dd-trace-java-docker-build.update-mirror
+
+      - name: Checkout DataDog/dd-trace-java-docker-build
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: dd-trace-java-docker-build
+
+      - name: Checkout DataDog/images
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: DataDog/images
+          token: ${{ steps.octo-sts.outputs.token }}
+          path: images
+
+      - name: Capture images HEAD SHA
+        id: images-head
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: images
+
+      - name: Install crane
+        run: |
+          CRANE_VERSION="0.20.2"
+          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz" -o crane.tar.gz
+          tar -xzf crane.tar.gz crane
+          sudo mv crane /usr/local/bin/crane
+          rm crane.tar.gz
+
+      - name: Resolve digests and add new or update existing digests in mirror files
+        id: update-mirror
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: bash "${GITHUB_WORKSPACE}/dd-trace-java-docker-build/scripts/create-test-mirror-entries.sh"
+        working-directory: images
+
+      - name: Define branch name
+        id: define-branch
+        run: echo "branch=ci/add-dd-trace-java-docker-build-test-images-pr${{ github.event.inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit changes
+        id: create-commit
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          MODE: ${{ steps.update-mirror.outputs.mode }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mirror.yaml mirror.lock.yaml
+          if git diff --cached --quiet; then
+            echo "No changes detected in mirror files; skipping commit."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "chore: Update dd-trace-java-docker-build test image digests for PR #${PR_NUMBER}"
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: images
+
+      - name: Push changes
+        if: ${{ steps.create-commit.outputs.has_changes == 'true' }}
+        uses: DataDog/commit-headless@05d7b7ee023e2c7d01c47832d420c2503cd416f3 # action/v2.0.3
+        with:
+          token: "${{ steps.octo-sts.outputs.token }}"
+          branch: "${{ steps.define-branch.outputs.branch }}"
+          head-sha: "${{ steps.images-head.outputs.sha }}"
+          create-branch: true
+          command: push
+          commits: "${{ steps.create-commit.outputs.commit }}"
+          working-directory: images
+
+      - name: Create pull request
+        id: images-pr
+        if: ${{ steps.create-commit.outputs.has_changes == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: |
+          PR_URL=$(gh pr create \
+            --repo DataDog/images \
+            --draft \
+            --title "Update dd-trace-java-docker-build test images for PR #${PR_NUMBER}" \
+            --base master \
+            --head "${{ steps.define-branch.outputs.branch }}" \
+            --body "Adds/updates mirror entries for \`${PR_NUMBER}_merge-*\` test images from DataDog/dd-trace-java-docker-build#${PR_NUMBER}. These images should be removed after testing.")
+          echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on source PR with mirror cleanup reminder
+        if: ${{ steps.update-mirror.outputs.mode == 'add' && steps.create-commit.outputs.has_changes == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          IMAGES_PR_URL: ${{ steps.images-pr.outputs.pr_url }}
+        run: |
+          gh pr comment "${PR_NUMBER}" \
+            --repo DataDog/dd-trace-java-docker-build \
+            --body "Mirrored test images for \`${PR_NUMBER}_merge-*\` were added in ${IMAGES_PR_URL}. When you've finished validating the image, please remove the mirrored test images."

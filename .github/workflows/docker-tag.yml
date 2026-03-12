@@ -1,4 +1,4 @@
-name: Tag new images version
+name: Tag new images version # triggers update-mirror-digests workflow
 on:
   schedule:
     # Quarterly schedule, roughly aligned with JDK CPU
