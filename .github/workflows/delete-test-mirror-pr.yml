@@ -1,0 +1,89 @@
+name: Delete test image mirror PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number in dd-trace-java-docker-build (e.g. 123)"
+        required: true
+
+jobs:
+  delete-test-mirror-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC token federation
+      contents: read
+    steps:
+      - uses: DataDog/dd-octo-sts-action@acaa02eee7e3bb0839e4272dacb37b8f3b58ba80 # v1.0.3
+        id: octo-sts
+        with:
+          scope: DataDog/images
+          policy: dd-trace-java-docker-build.update-mirror
+
+      - name: Checkout DataDog/dd-trace-java-docker-build
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          path: dd-trace-java-docker-build
+
+      - name: Checkout DataDog/images
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: DataDog/images
+          token: ${{ steps.octo-sts.outputs.token }}
+          path: images
+
+      - name: Capture images HEAD SHA
+        id: images-head
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: images
+
+      - name: Remove test mirror entries
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: bash "${GITHUB_WORKSPACE}/dd-trace-java-docker-build/scripts/delete-test-mirror-entries.sh"
+        working-directory: images
+
+      - name: Define branch name
+        id: define-branch
+        run: echo "branch=ci/delete-dd-trace-java-docker-build-test-images-pr${{ github.event.inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit changes
+        id: create-commit
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mirror.yaml mirror.lock.yaml
+          if git diff --cached --quiet; then
+            echo "::error::Expected mirror file deletions but found no changes."
+            exit 1
+          fi
+          git commit -m "chore: Remove dd-trace-java-docker-build test images for PR #${PR_NUMBER}"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        working-directory: images
+
+      - name: Push changes
+        uses: DataDog/commit-headless@05d7b7ee023e2c7d01c47832d420c2503cd416f3 # action/v2.0.3
+        with:
+          target: DataDog/images
+          token: "${{ steps.octo-sts.outputs.token }}"
+          branch: "${{ steps.define-branch.outputs.branch }}"
+          head-sha: "${{ steps.images-head.outputs.sha }}"
+          create-branch: true
+          command: push
+          commits: "${{ steps.create-commit.outputs.commit }}"
+          working-directory: images
+
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ steps.octo-sts.outputs.token }}
+          PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: |
+          gh pr create \
+            --repo DataDog/images \
+            --draft \
+            --title "Remove dd-trace-java-docker-build test images for PR #${PR_NUMBER}" \
+            --base master \
+            --head "${{ steps.define-branch.outputs.branch }}" \
+            --body "Removes mirror.yaml and mirror.lock.yaml entries for \`${PR_NUMBER}_merge-*\` test images from DataDog/dd-trace-java-docker-build#${PR_NUMBER}."
