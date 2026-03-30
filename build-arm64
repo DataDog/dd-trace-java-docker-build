@@ -100,15 +100,12 @@ function do_describe() {
             echo
             echo "## Operating System"
             echo
-            echo "* $(lsb_release --description --short)"
+            . /etc/os-release
+            echo "* ${PRETTY_NAME}"
             echo
-            echo "## Tools"
+            echo "## Java Home"
             echo
-            echo "* $(git --version)"
-            echo "* $(docker --version)"
-            echo "* $(docker compose version)"
-            echo "* datadog-ci $(datadog-ci version)"
-            echo "* vault $(vault --version)"
+            echo "* ${JAVA_HOME}"
             echo
             echo "## JDKs"
             echo
