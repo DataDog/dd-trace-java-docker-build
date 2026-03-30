@@ -9,10 +9,22 @@ on:
   schedule:
     - cron: '0 0 * * 0' 
   workflow_dispatch:
+    inputs:
+      run_amd64:
+        description: "Run the standard amd64 image build"
+        required: false
+        default: false
+        type: boolean
+      run_arm64:
+        description: "Run the experimental arm64 image build"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build_push_check:
     name: Build docker image, publish it and run vuln scanner against it
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_amd64 == true }}
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
@@ -62,3 +74,58 @@ jobs:
         uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           sarif_file: 'trivy-results.sarif'
+
+  build_push_check_arm64:
+    name: Build arm64 docker image, publish it and run vuln scanner against it
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_arm64 == true }}
+    permissions:
+      contents: read
+      security-events: write
+      packages: write
+    runs-on: ubuntu-latest
+    environment:
+      name: ci-build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@e20b58169f0f89e8fb4a5c8a5ad9b65cb7e7b98a # 3.6.0
+        with:
+          platforms: arm64
+      - name: Set up Docker Buildx
+        id: buildx-arm64
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # 4.0.0
+      - name: Login to ghcr.io
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # 4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+        with:
+          docker-images: false
+      - name: Build arm64 image
+        id: build-arm64
+        run: bash ./build-arm64
+      - name: Test arm64 image
+        run: bash ./build-arm64 --test
+      - name: Describe arm64 image
+        run: bash ./build-arm64 --describe >> $GITHUB_STEP_SUMMARY
+      - name: Push arm64 image
+        run: bash ./build-arm64 --push
+      - name: Run Trivy vulnerability scanner on arm64 image
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        with:
+          image-ref: '${{ steps.build-arm64.outputs.LATEST_IMAGE_TAG }}'
+          format: 'sarif'
+          output: 'trivy-results-arm64.sarif'
+          severity: 'CRITICAL,HIGH'
+          limit-severities-for-sarif: true
+        env:
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
+          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db
+      - name: Upload Trivy arm64 scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
+        with:
+          sarif_file: 'trivy-results-arm64.sarif'

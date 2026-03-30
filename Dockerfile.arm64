@@ -1,0 +1,110 @@
+# syntax=docker/dockerfile:1.6
+
+ARG LATEST_VERSION
+FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
+
+FROM ubuntu:24.04 AS default-jdk
+ARG LATEST_VERSION
+
+COPY --from=eclipse-temurin:8-jdk-noble /opt/java/openjdk /usr/lib/jvm/8
+COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
+COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
+COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
+COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
+COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
+
+RUN <<-EOT
+	set -eux
+	rm -rf \
+		/usr/lib/jvm/*/lib/src.zip \
+		/usr/lib/jvm/*/demo \
+		/usr/lib/jvm/*/sample
+EOT
+
+FROM ubuntu:24.04 AS base
+ARG LATEST_VERSION
+ENV LATEST_VERSION=${LATEST_VERSION}
+
+LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
+
+RUN <<-EOT
+	set -eux
+	apt-get update
+	apt-get install -y sudo
+	groupadd --gid 1001 non-root-group
+	useradd --uid 1001 --gid non-root-group -m non-root-user
+	echo "non-root-user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/non-root-user
+	chmod 0440 /etc/sudoers.d/non-root-user
+	mkdir -p /home/non-root-user/.config
+	chown -R non-root-user:non-root-group /home/non-root-user/.config
+	apt-get clean
+	rm -rf /var/lib/apt/lists/*
+EOT
+
+USER non-root-user
+WORKDIR /home/non-root-user
+
+RUN <<-EOT
+	set -eux
+	sudo apt-get update
+	sudo apt-get install -y curl tar apt-transport-https ca-certificates gnupg socat less debian-goodies autossh ca-certificates-java python3-pip locales jq git gh yq lsb-release lsof unzip parallel xsltproc
+	sudo locale-gen en_US.UTF-8
+	sudo git config --system --add safe.directory "*"
+
+	sudo mkdir -p /tmp/docker-install
+	DOCKER_LATEST_VERSION=$(curl -s https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -oP 'docker-\K([0-9]+\.[0-9]+\.[0-9]+)(?=\.tgz)' | sort -V | tail -n 1)
+	sudo curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-${DOCKER_LATEST_VERSION}.tgz" | sudo tar -xz -C /tmp/docker-install
+	sudo mv /tmp/docker-install/docker/docker /usr/local/bin/
+	sudo rm -rf /tmp/docker-install
+	sudo mkdir -p /usr/local/lib/docker/cli-plugins
+	sudo curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+	sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
+EOT
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
+
+RUN <<-EOT
+	set -eux
+	sudo apt-get update
+	sudo pip3 install --break-system-packages awscli
+	sudo pip3 cache purge
+
+	ARCH=$(dpkg --print-architecture)
+	case "$ARCH" in
+		arm64) DD_CI_ARCH="arm64"; VAULT_ARCH="arm64" ;;
+		amd64) DD_CI_ARCH="x64"; VAULT_ARCH="amd64" ;;
+		*) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
+	esac
+
+	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-${DD_CI_ARCH}" --output "/usr/local/bin/datadog-ci"
+	sudo chmod +x /usr/local/bin/datadog-ci
+
+	VAULT_VERSION=1.20.4
+	curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o vault.zip
+	unzip vault.zip
+	sudo mv vault /usr/local/bin/vault
+	chmod +x /usr/local/bin/vault
+	rm vault.zip
+
+	sudo apt-get clean
+	sudo rm -rf /var/lib/apt/lists/*
+EOT
+
+ENV JAVA_DEBIAN_VERSION=unused
+ENV JAVA_VERSION=unused
+
+ENV JAVA_8_HOME=/usr/lib/jvm/8
+ENV JAVA_11_HOME=/usr/lib/jvm/11
+ENV JAVA_17_HOME=/usr/lib/jvm/17
+ENV JAVA_21_HOME=/usr/lib/jvm/21
+ENV JAVA_25_HOME=/usr/lib/jvm/25
+ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
+
+ENV JAVA_HOME=${JAVA_8_HOME}
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+
