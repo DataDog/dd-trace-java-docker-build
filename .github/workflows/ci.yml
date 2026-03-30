@@ -82,16 +82,12 @@ jobs:
       contents: read
       security-events: write
       packages: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     environment:
       name: ci-build
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@e20b58169f0f89e8fb4a5c8a5ad9b65cb7e7b98a # 3.6.0
-        with:
-          platforms: arm64
       - name: Set up Docker Buildx
         id: buildx-arm64
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # 4.0.0
