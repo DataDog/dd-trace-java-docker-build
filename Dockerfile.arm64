@@ -21,6 +21,7 @@ LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-d
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends git \
+ && git config --system --add safe.directory "*" \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm

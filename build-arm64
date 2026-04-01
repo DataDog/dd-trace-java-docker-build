@@ -86,9 +86,9 @@ function do_describe() {
             echo
             for env_name in JAVA_8_HOME JAVA_11_HOME JAVA_17_HOME JAVA_21_HOME JAVA_25_HOME; do
               echo "* ${env_name}"
-              echo "```"
+              printf '%s\n' '```'
               "${!env_name}/bin/java" -version 2>&1
-              echo "```"
+              printf '%s\n' '```'
               echo
             done
         '
