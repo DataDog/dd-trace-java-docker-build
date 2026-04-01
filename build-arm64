@@ -2,7 +2,6 @@
 set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
-readonly BASE_VARIANTS=(8 11 17 21 25 tip)
 
 function compute_metadata() {
     GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
@@ -19,58 +18,35 @@ function compute_metadata() {
     GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
 }
 
-function compute_latest_version() {
-    local base_year=2025
-    local base_version=23
-
-    version="$((base_version + ($(date +%Y) - base_year) * 2))"
-    if [ "$(date +%m)" -ge 4 ]; then
-        version="$((version + 1))"
-    fi
-    if [ "$(date +%m)" -ge 10 ]; then
-        version="$((version + 1))"
-    fi
-
-    export LATEST_VERSION="$version"
+function image_name() {
+    echo -n "${IMAGE_NAME}:${TAG_PREFIX}arm64-base"
 }
 
 function docker_build() {
-    local tag="$1"
     docker buildx build \
-        --build-arg LATEST_VERSION=$LATEST_VERSION \
         --platform linux/arm64 \
         --label org.opencontainers.image.created="$BUILD_DATE" \
         --label org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build \
         --label org.opencontainers.image.revision="$GIT_HEAD_REF" \
         --file Dockerfile.arm64 \
         --target base \
-        --tag "$tag" \
+        --tag "$(image_name)" \
         --load \
         .
 }
 
-function image_name() {
-    local variant="${1}"
-    echo -n "${IMAGE_NAME}:${TAG_PREFIX}arm64-${variant}"
-}
-
 function do_build() {
     compute_metadata
-    compute_latest_version
-    docker_build "$(image_name base)"
+    docker_build
     if [ -n "${GITHUB_OUTPUT+unset}" ]; then
-        echo "LATEST_IMAGE_TAG=$(image_name base)" >>"$GITHUB_OUTPUT"
+        echo "LATEST_IMAGE_TAG=$(image_name)" >>"$GITHUB_OUTPUT"
     fi
-    for variant in "${BASE_VARIANTS[@]}"; do
-        variant="${variant,,}"
-        docker tag "$(image_name base)" "$(image_name "${variant}")"
-    done
 }
 
 function do_test() {
     local image
     compute_metadata
-    image="$(image_name base)"
+    image="$(image_name)"
     docker run \
         --platform linux/arm64 \
         --rm \
@@ -89,8 +65,7 @@ function do_test() {
 function do_describe() {
     local image
     compute_metadata
-    compute_latest_version
-    image="$(image_name base)"
+    image="$(image_name)"
     docker run \
         --platform linux/arm64 \
         --rm \
@@ -120,12 +95,8 @@ function do_describe() {
 }
 
 function do_push() {
-    local tag
     compute_metadata
-    for tag in base "${BASE_VARIANTS[@]}"; do
-        tag="${tag,,}"
-        docker push "$(image_name "${tag}")"
-    done
+    docker push "$(image_name)"
 }
 
 if [[ -z ${1:-} ]]; then

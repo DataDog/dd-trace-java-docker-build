@@ -1,17 +1,12 @@
 # syntax=docker/dockerfile:1.6
 
-ARG LATEST_VERSION
-FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
-
 FROM ubuntu:24.04 AS default-jdk
-ARG LATEST_VERSION
 
 COPY --from=eclipse-temurin:8-jdk-noble /opt/java/openjdk /usr/lib/jvm/8
 COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
-COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 RUN <<-EOT
 	set -eux
@@ -22,9 +17,6 @@ RUN <<-EOT
 EOT
 
 FROM ubuntu:24.04 AS base
-ARG LATEST_VERSION
-ENV LATEST_VERSION=${LATEST_VERSION}
-
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
 RUN apt-get update \
@@ -41,7 +33,6 @@ ENV JAVA_11_HOME=/usr/lib/jvm/11
 ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_21_HOME=/usr/lib/jvm/21
 ENV JAVA_25_HOME=/usr/lib/jvm/25
-ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
 
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
