@@ -20,7 +20,7 @@ FROM ubuntu:24.04 AS base
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends git \
+ && apt-get install -y --no-install-recommends git lsof \
  && git config --system --add safe.directory "*" \
  && rm -rf /var/lib/apt/lists/*
 
