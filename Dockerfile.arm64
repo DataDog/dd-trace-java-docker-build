@@ -27,7 +27,14 @@ ENV LATEST_VERSION=${LATEST_VERSION}
 
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
+
+RUN groupadd --gid 1001 non-root-group \
+ && useradd --uid 1001 --gid non-root-group --create-home --shell /bin/bash non-root-user
 
 ENV JAVA_8_HOME=/usr/lib/jvm/8
 ENV JAVA_11_HOME=/usr/lib/jvm/11
@@ -38,4 +45,5 @@ ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
 
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
-WORKDIR /work
+USER non-root-user
+WORKDIR /home/non-root-user
