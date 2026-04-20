@@ -14,6 +14,8 @@
 set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SOURCE_PREFIX="ghcr.io/datadog/dd-trace-java-docker-build"
+readonly DEST_REPO="dd-trace-java-docker-build"
 
 if ! [[ "${PR_NUMBER}" =~ ^[0-9]+$ ]]; then
   echo "::error::PR_NUMBER must be numeric (got: '${PR_NUMBER}')" >&2
@@ -23,7 +25,7 @@ fi
 readonly PREFIX="${PR_NUMBER}_merge-"
 
 # Check if entries already exist in mirror.yaml (use base variant as tester)
-if grep -qF "ghcr.io/datadog/dd-trace-java-docker-build:${PREFIX}base" mirror.yaml; then
+if grep -qF "\"${PREFIX}base\"" mirror.yaml; then
   MODE="update"
   echo "Entries for '${PREFIX}' already exist — updating digests only"
 else
@@ -39,17 +41,21 @@ fi
 source "${SCRIPT_DIR}/get-image-digests.sh"
 
 if [[ "$MODE" == "add" ]]; then
-  for variant in "${CI_VARIANTS[@]}"; do
-    tag="${PREFIX}${variant}"
-    printf '  - source: "%s:%s"\n    dest:\n      repo: "dd-trace-java-docker-build"\n      tag: "%s"\n    replication_target: ""\n' \
-      "ghcr.io/datadog/dd-trace-java-docker-build" "${tag}" "${tag}" >> mirror.yaml
-  done
-  echo "Appended ${#CI_VARIANTS[@]} entries to mirror.yaml"
+  {
+    printf '  - source_prefix: "%s"\n' "${SOURCE_PREFIX}"
+    printf '    dest_repo: "%s"\n' "${DEST_REPO}"
+    printf '    tags:\n'
+    for variant in "${CI_VARIANTS[@]}"; do
+      printf '      - "%s%s"\n' "${PREFIX}" "${variant}"
+    done
+    printf '    replication_target: ""\n'
+  } >> mirror.yaml
+  echo "Appended grouped entry to mirror.yaml"
 
   for variant in "${CI_VARIANTS[@]}"; do
     tag="${PREFIX}${variant}"
     printf '    - source: %s:%s\n      digest: %s\n' \
-      "ghcr.io/datadog/dd-trace-java-docker-build" "${tag}" "${DIGESTS[$variant]}" >> mirror.lock.yaml
+      "${SOURCE_PREFIX}" "${tag}" "${DIGESTS[$variant]}" >> mirror.lock.yaml
   done
   echo "Appended ${#CI_VARIANTS[@]} entries to mirror.lock.yaml"
 else
