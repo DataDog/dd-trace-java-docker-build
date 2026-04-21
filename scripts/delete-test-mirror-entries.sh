@@ -47,7 +47,7 @@ remove_group_from_mirror_yaml() {
 
   TARGET_BLOCK="${block}" perl -0pe '
     BEGIN { $removed = 0 }
-    $removed = s/\Q$ENV{TARGET_BLOCK}\E//s;
+    $removed = s/\Q$ENV{TARGET_BLOCK}\E\n?//s;
     END { exit($removed ? 0 : 44) }
   ' "${file}" > "${file}.tmp" && mv "${file}.tmp" "${file}"
 }

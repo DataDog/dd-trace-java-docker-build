@@ -25,7 +25,7 @@ fi
 readonly PREFIX="${PR_NUMBER}_merge-"
 
 # Check if entries already exist in mirror.yaml (use base variant as tester)
-if grep -qF "\"${PREFIX}base\"" mirror.yaml; then
+if CHECK_SOURCE_PREFIX="${SOURCE_PREFIX}" CHECK_DEST_REPO="${DEST_REPO}" CHECK_TAG="${PREFIX}base" perl -0ne 'exit(index($_, qq{  - source_prefix: "$ENV{CHECK_SOURCE_PREFIX}"\n    dest_repo: "$ENV{CHECK_DEST_REPO}"\n    tags:\n      - "$ENV{CHECK_TAG}"\n}) >= 0 ? 0 : 1)' mirror.yaml; then
   MODE="update"
   echo "Entries for '${PREFIX}' already exist — updating digests only"
 else
