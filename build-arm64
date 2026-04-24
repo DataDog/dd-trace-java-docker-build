@@ -59,6 +59,7 @@ function do_test() {
             "$JAVA_17_HOME/bin/java" -version
             "$JAVA_21_HOME/bin/java" -version
             "$JAVA_25_HOME/bin/java" -version
+            "$JAVA_GRAALVM21_HOME/bin/java" -version
         '
 }
 
@@ -84,7 +85,7 @@ function do_describe() {
             echo
             echo "## JDKs"
             echo
-            for env_name in JAVA_8_HOME JAVA_11_HOME JAVA_17_HOME JAVA_21_HOME JAVA_25_HOME; do
+            for env_name in JAVA_8_HOME JAVA_11_HOME JAVA_17_HOME JAVA_21_HOME JAVA_25_HOME JAVA_GRAALVM21_HOME; do
               echo "* ${env_name}"
               printf '%s\n' '```'
               "${!env_name}/bin/java" -version 2>&1

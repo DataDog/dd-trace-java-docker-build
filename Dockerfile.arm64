@@ -7,6 +7,7 @@ COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
+COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
 
 RUN <<-EOT
 	set -eux
@@ -34,6 +35,7 @@ ENV JAVA_11_HOME=/usr/lib/jvm/11
 ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_21_HOME=/usr/lib/jvm/21
 ENV JAVA_25_HOME=/usr/lib/jvm/25
+ENV JAVA_GRAALVM21_HOME=/usr/lib/jvm/graalvm21
 
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
