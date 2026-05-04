@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1.6
+
+FROM ubuntu:24.04 AS default-jdk
+
+COPY --from=eclipse-temurin:8-jdk-noble /opt/java/openjdk /usr/lib/jvm/8
+COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
+COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
+COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
+COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
+COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
+
+RUN <<-EOT
+	set -eux
+	rm -rf \
+		/usr/lib/jvm/*/lib/src.zip \
+		/usr/lib/jvm/*/demo \
+		/usr/lib/jvm/*/sample
+EOT
+
+FROM ubuntu:24.04 AS base
+LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl jq git lsof gcc libc6-dev zlib1g-dev \
+ && git config --system --add safe.directory "*" \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
+
+RUN groupadd --gid 1001 non-root-group \
+ && useradd --uid 1001 --gid non-root-group --create-home --shell /bin/bash non-root-user
+
+ENV JAVA_8_HOME=/usr/lib/jvm/8
+ENV JAVA_11_HOME=/usr/lib/jvm/11
+ENV JAVA_17_HOME=/usr/lib/jvm/17
+ENV JAVA_21_HOME=/usr/lib/jvm/21
+ENV JAVA_25_HOME=/usr/lib/jvm/25
+ENV JAVA_GRAALVM21_HOME=/usr/lib/jvm/graalvm21
+
+ENV JAVA_HOME=${JAVA_8_HOME}
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+USER non-root-user
+WORKDIR /home/non-root-user

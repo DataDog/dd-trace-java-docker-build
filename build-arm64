@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+set -eu
+
+readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
+
+function compute_metadata() {
+    GIT_BRANCH="${GITHUB_REF_NAME:-$(git branch --show-current)}"
+    readonly GIT_BRANCH="${GIT_BRANCH:-local}"
+    if [[ ${GIT_BRANCH} = master ]]; then
+        TAG_PREFIX=""
+    else
+        TAG_PREFIX="${GIT_BRANCH}-"
+        TAG_PREFIX="${TAG_PREFIX,,}"
+        TAG_PREFIX="${TAG_PREFIX//\//_}"
+    fi
+
+    BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    GIT_HEAD_REF="$(git show-ref --head --hash ^HEAD)"
+}
+
+function image_name() {
+    echo -n "${IMAGE_NAME}:${TAG_PREFIX}arm64-base"
+}
+
+function docker_build() {
+    docker buildx build \
+        --platform linux/arm64 \
+        --label org.opencontainers.image.created="$BUILD_DATE" \
+        --label org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build \
+        --label org.opencontainers.image.revision="$GIT_HEAD_REF" \
+        --file Dockerfile.arm64 \
+        --target base \
+        --tag "$(image_name)" \
+        --load \
+        .
+}
+
+function do_build() {
+    compute_metadata
+    docker_build
+    if [ -n "${GITHUB_OUTPUT+unset}" ]; then
+        echo "LATEST_IMAGE_TAG=$(image_name)" >>"$GITHUB_OUTPUT"
+    fi
+}
+
+function do_test() {
+    local image
+    compute_metadata
+    image="$(image_name)"
+    docker run \
+        --platform linux/arm64 \
+        --rm \
+        "$image" \
+        bash -lc '
+            set -eux
+            "$JAVA_HOME/bin/java" -version
+            "$JAVA_8_HOME/bin/java" -version
+            "$JAVA_11_HOME/bin/java" -version
+            "$JAVA_17_HOME/bin/java" -version
+            "$JAVA_21_HOME/bin/java" -version
+            "$JAVA_25_HOME/bin/java" -version
+            "$JAVA_GRAALVM21_HOME/bin/java" -version
+        '
+}
+
+function do_describe() {
+    local image
+    compute_metadata
+    image="$(image_name)"
+    docker run \
+        --platform linux/arm64 \
+        --rm \
+        "$image" \
+        bash -lc '
+            echo "# arm64 image"
+            echo
+            echo "## Operating System"
+            echo
+            . /etc/os-release
+            echo "* ${PRETTY_NAME}"
+            echo
+            echo "## Java Home"
+            echo
+            echo "* ${JAVA_HOME}"
+            echo
+            echo "## JDKs"
+            echo
+            for env_name in JAVA_8_HOME JAVA_11_HOME JAVA_17_HOME JAVA_21_HOME JAVA_25_HOME JAVA_GRAALVM21_HOME; do
+              echo "* ${env_name}"
+              printf '%s\n' '```'
+              "${!env_name}/bin/java" -version 2>&1
+              printf '%s\n' '```'
+              echo
+            done
+        '
+}
+
+function do_push() {
+    compute_metadata
+    docker push "$(image_name)"
+}
+
+if [[ -z ${1:-} ]]; then
+    do_build
+elif [[ ${1} = "--test" ]]; then
+    do_test
+elif [[ ${1} = "--describe" ]]; then
+    do_describe
+elif [[ ${1} = "--push" ]]; then
+    do_push
+else
+    echo "Unknown argument: ${1}" >&2
+    exit 1
+fi
