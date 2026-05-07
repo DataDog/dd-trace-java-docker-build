@@ -19,7 +19,7 @@ readonly VARIANTS=(
     graalvm25
 )
 
-readonly LATEST_VERSION="24"
+readonly LATEST_VERSION="26"
 
 # Use buildkit to match CI as closely as possible.
 export DOCKER_BUILDKIT=1
