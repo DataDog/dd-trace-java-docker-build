@@ -1,4 +1,4 @@
-name: Tag new images version
+name: Tag new images version # triggers update-mirror-digests workflow
 on:
   schedule:
     # Quarterly schedule, roughly aligned with JDK CPU
@@ -14,9 +14,9 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
       - name: Login to ghcr.io
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # 3.4.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # 4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
