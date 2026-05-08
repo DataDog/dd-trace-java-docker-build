@@ -21,11 +21,14 @@ FROM ubuntu:24.04 AS base
 LABEL org.opencontainers.image.source=https://github.com/DataDog/dd-trace-java-docker-build
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl jq git lsof gcc libc6-dev zlib1g-dev unzip \
+ && apt-get install -y --no-install-recommends ca-certificates curl jq git lsof gcc libc6-dev zlib1g-dev unzip locales \
+ && locale-gen en_US.UTF-8 \
  && git config --system --add safe.directory "*" \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 RUN groupadd --gid 1001 non-root-group \
  && useradd --uid 1001 --gid non-root-group --create-home --shell /bin/bash non-root-user
