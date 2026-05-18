@@ -50,7 +50,7 @@ jobs:
             awk '/^FROM/{print $2}' Dockerfile
           } | sort -u)
 
-          # Filter to only external images (not local stages, scratch, or ARG-substituted refs)
+          # Filter to only external images
           EXTERNAL_IMAGES=()
           for ref in "${ALL_REFS[@]}"; do
             [[ "$ref" == "scratch" ]] && continue
