@@ -106,6 +106,7 @@ COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION
 # Based on the latest Ubuntu LTS image.
 FROM ubuntu:24.04 AS base
 ARG LATEST_VERSION
+ARG DATADOG_CI_VERSION=5.17.0
 ENV LATEST_VERSION=${LATEST_VERSION}
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
@@ -163,7 +164,7 @@ RUN <<-EOT
 	sudo pip3 cache purge
 
 	# datadog-ci
-	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
+	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
 	sudo chmod +x /usr/local/bin/datadog-ci
 
 	# vault installation inspired by https://github.com/DataDog/datadog-agent-buildimages/blob/main/agent-deploy/Dockerfile
