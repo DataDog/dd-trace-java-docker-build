@@ -125,12 +125,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download amd64 digests
-        uses: actions/download-artifact@d3f86a106a0bac45b6d427b53961df85b0c84066 # v4.3.0
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: digests-amd64
           path: digests
       - name: Download arm64 digests
-        uses: actions/download-artifact@d3f86a106a0bac45b6d427b53961df85b0c84066 # v4.3.0
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: digests-arm64
           path: digests
