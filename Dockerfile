@@ -1,11 +1,20 @@
-# syntax=docker/dockerfile:1.6
+# syntax=docker/dockerfile:1.10
 
+# NOTE: This Dockerfile is intended to be invoked via the `./build` script,
+# which sets ALL_JDK_STAGE / FULL_STAGE according to the target architecture.
+# The defaults below are for amd64. When building arm64 directly with `docker
+# build`, you MUST pass `--build-arg ALL_JDK_STAGE=all-jdk-arm64 --build-arg
+# FULL_STAGE=full-arm64` (and `--platform linux/arm64`), or the produced image
+# will silently mix amd64 binaries (zulu7, ibm8) into an arm64 image.
 ARG LATEST_VERSION
+ARG ALL_JDK_STAGE=all-jdk-amd64
+ARG FULL_STAGE=full-amd64
 FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
-FROM ubuntu:24.04 AS all-jdk
+FROM ubuntu:24.04 AS all-jdk-common
 ARG LATEST_VERSION
+ARG TARGETARCH
 
 RUN <<-EOT
 	set -eux
@@ -54,11 +63,8 @@ COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
 COPY --from=eclipse-temurin:26-jdk-noble /opt/java/openjdk /usr/lib/jvm/26
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
-COPY --from=azul/zulu-openjdk:7 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
-
-COPY --from=ibmjava:8-sdk /opt/ibm/java /usr/lib/jvm/ibm8
 
 COPY --from=ibm-semeru-runtimes:open-8-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru8
 COPY --from=ibm-semeru-runtimes:open-11-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru11
@@ -76,9 +82,14 @@ COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/gr
 # 2. Once created, token should be added to GitHub protected environment by repository administrator.
 RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
 	set -eux
+	case "${TARGETARCH}" in
+		amd64) ORACLE_JAVA8_PACKAGE="jdk-8-linux-x64_bin.tar.gz" ;;
+		arm64) ORACLE_JAVA8_PACKAGE="jdk-8-linux-aarch64_bin.tar.gz" ;;
+		*) echo "Unsupported TARGETARCH for Oracle Java 8: ${TARGETARCH}" >&2; exit 1 ;;
+	esac
 	sudo mkdir -p /usr/lib/jvm/oracle8
 	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
-	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" https://java.oraclecloud.com/java/8/latest/jdk-8-linux-x64_bin.tar.gz | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
+	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" "https://java.oraclecloud.com/java/8/latest/${ORACLE_JAVA8_PACKAGE}" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
 EOT
 
@@ -90,6 +101,25 @@ RUN <<-EOT
 		/usr/lib/jvm/*/sample \
 		/usr/lib/jvm/graalvm*/lib/installer
 EOT
+
+FROM --platform=linux/amd64 azul/zulu-openjdk:7 AS zulu7-amd64
+FROM --platform=linux/amd64 ibmjava:8-sdk AS ibm8-amd64
+
+FROM all-jdk-common AS all-jdk-arm64
+
+FROM all-jdk-common AS all-jdk-amd64
+
+COPY --from=zulu7-amd64 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
+COPY --from=ibm8-amd64 /opt/ibm/java /usr/lib/jvm/ibm8
+
+RUN <<-EOT
+	sudo rm -rf \
+		/usr/lib/jvm/*/lib/src.zip \
+		/usr/lib/jvm/*/demo \
+		/usr/lib/jvm/*/sample
+EOT
+
+FROM ${ALL_JDK_STAGE} AS all-jdk
 
 FROM scratch AS default-jdk
 ARG LATEST_VERSION
@@ -107,6 +137,7 @@ COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION
 FROM ubuntu:24.04 AS base
 ARG LATEST_VERSION
 ARG DATADOG_CI_VERSION=5.17.0
+ARG TARGETARCH
 ENV LATEST_VERSION=${LATEST_VERSION}
 
 # https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
@@ -163,13 +194,25 @@ RUN <<-EOT
 	sudo pip3 install --break-system-packages awscli
 	sudo pip3 cache purge
 
+	case "${TARGETARCH}" in
+		amd64)
+			DATADOG_CI_ARCH="x64"
+			VAULT_ARCH="amd64"
+			;;
+		arm64)
+			DATADOG_CI_ARCH="arm64"
+			VAULT_ARCH="arm64"
+			;;
+		*) echo "Unsupported TARGETARCH for tooling: ${TARGETARCH}" >&2; exit 1 ;;
+	esac
+
 	# datadog-ci
-	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci"
+	sudo curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v${DATADOG_CI_VERSION}/datadog-ci_linux-${DATADOG_CI_ARCH}" --output "/usr/local/bin/datadog-ci"
 	sudo chmod +x /usr/local/bin/datadog-ci
 
 	# vault installation inspired by https://github.com/DataDog/datadog-agent-buildimages/blob/main/agent-deploy/Dockerfile
 	VAULT_VERSION=1.20.4
-	curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip" -o vault.zip
+	curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" -o vault.zip
 	unzip vault.zip
 	sudo mv vault /usr/local/bin/vault
 	chmod +x /usr/local/bin/vault
@@ -210,16 +253,14 @@ ENV JAVA_${VARIANT_UPPER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 ENV JAVA_${VARIANT_LOWER}_HOME=/usr/lib/jvm/${VARIANT_LOWER}
 
 # Full image for debugging, contains all JDKs.
-FROM base AS full
+FROM base AS full-common
 
 USER non-root-user
 WORKDIR /home/non-root-user
 
-COPY --from=all-jdk /usr/lib/jvm/7 /usr/lib/jvm/7
 COPY --from=all-jdk /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=all-jdk /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 COPY --from=all-jdk /usr/lib/jvm/oracle8 /usr/lib/jvm/oracle8
-COPY --from=all-jdk /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
 COPY --from=all-jdk /usr/lib/jvm/semeru8 /usr/lib/jvm/semeru8
 COPY --from=all-jdk /usr/lib/jvm/semeru11 /usr/lib/jvm/semeru11
 COPY --from=all-jdk /usr/lib/jvm/semeru17 /usr/lib/jvm/semeru17
@@ -227,15 +268,11 @@ COPY --from=all-jdk /usr/lib/jvm/graalvm17 /usr/lib/jvm/graalvm17
 COPY --from=all-jdk /usr/lib/jvm/graalvm21 /usr/lib/jvm/graalvm21
 COPY --from=all-jdk /usr/lib/jvm/graalvm25 /usr/lib/jvm/graalvm25
 
-ENV JAVA_7_HOME=/usr/lib/jvm/7
-
-ENV JAVA_ZULU7_HOME=/usr/lib/jvm/7
 ENV JAVA_ZULU8_HOME=/usr/lib/jvm/zulu8
 ENV JAVA_ZULU11_HOME=/usr/lib/jvm/zulu11
 
 ENV JAVA_ORACLE8_HOME=/usr/lib/jvm/oracle8
 
-ENV JAVA_IBM8_HOME=/usr/lib/jvm/ibm8
 # Temporarily set these aliases for backwards compatibility.
 ENV JAVA_IBM11_HOME=/usr/lib/jvm/semeru11
 ENV JAVA_IBM17_HOME=/usr/lib/jvm/semeru17
@@ -247,3 +284,16 @@ ENV JAVA_SEMERU17_HOME=/usr/lib/jvm/semeru17
 ENV JAVA_GRAALVM17_HOME=/usr/lib/jvm/graalvm17
 ENV JAVA_GRAALVM21_HOME=/usr/lib/jvm/graalvm21
 ENV JAVA_GRAALVM25_HOME=/usr/lib/jvm/graalvm25
+
+FROM full-common AS full-arm64
+
+FROM full-common AS full-amd64
+
+COPY --from=all-jdk /usr/lib/jvm/7 /usr/lib/jvm/7
+COPY --from=all-jdk /usr/lib/jvm/ibm8 /usr/lib/jvm/ibm8
+
+ENV JAVA_7_HOME=/usr/lib/jvm/7
+ENV JAVA_ZULU7_HOME=/usr/lib/jvm/7
+ENV JAVA_IBM8_HOME=/usr/lib/jvm/ibm8
+
+FROM ${FULL_STAGE} AS full

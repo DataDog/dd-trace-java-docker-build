@@ -11,6 +11,8 @@ Image variants are available on a per JDK basis:
 - The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17`, `graalvm21`, and `graalvm25` variants each contain the base JDKs in addition to the specific JDK from their name.
 - The `latest` variant contains the base JDKs and all of the specific JDKs above.
 
+All variants are published as multi-arch manifests covering `linux/amd64` and `linux/arm64`, so the same tag (e.g. `base`, `zulu8`, `tip`) resolves to the correct image for the host architecture. The `7` and `ibm8` variants are amd64-only because the upstream JDK images are not available for arm64; `docker pull` for those tags on arm64 will fail.
+
 Images are tagged with `ci-` prefixes via the [Tag new images version](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/docker-tag.yml) workflow, which runs quarterly on `master` and when manually triggered. A **48-hour cooldown** is enforced: the workflow verifies that all external upstream dependencies (Eclipse Temurin, Azul Zulu, IBM Semeru, GraalVM, etc.) referenced in the Dockerfile were built at least 48 hours ago before tagging. This ensures that upstream images have had sufficient time for vulnerability scans and community review before being CI use. On completion, it automatically triggers the [Update mirror digests for ci-* images](https://github.com/DataDog/dd-trace-java-docker-build/actions/workflows/update-mirror-digests.yml) workflow, which opens a PR in [DataDog/images](https://github.com/DataDog/images) updating the pinned `ci-*` mirror image digests. Once that PR is merged, `dd-trace-java` CI picks up the updated images from `registry.ddbuild.io`. Images are mirrored in `registry.ddbuild.io` to ensure they are signed before use in CI.
 
 ## Development
@@ -20,6 +22,14 @@ To build all the Docker images:
 ```bash
 ./build
 ```
+
+To build the arm64 Docker images:
+
+```bash
+PLATFORM=linux/arm64 ./build
+```
+
+On an amd64 host this requires QEMU emulation set up for Docker (`docker run --privileged --rm tonistiigi/binfmt --install all` if not already configured); arm64 hosts build natively.
 
 And then check the built images:
 

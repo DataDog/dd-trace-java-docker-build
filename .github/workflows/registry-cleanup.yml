@@ -12,7 +12,7 @@ jobs:
       contents: read
       packages: write
     steps:
-    - name: Prune untagged images
+    - name: Prune stale PR test image tags
       uses: vlaurin/action-ghcr-prune@0cf7d39f88546edd31965acba78cdcb0be14d641 #v0.6.0
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -21,4 +21,8 @@ jobs:
         keep-younger-than: 30 # days
         prune-tags-regexes: |
           ^[a-z0-9]+_merge-
-        prune-untagged: true
+        # IMPORTANT: do NOT enable prune-untagged. With multi-arch manifest
+        # lists, each per-arch child manifest appears "untagged" in GHCR even
+        # though it is referenced by a tagged manifest list. Pruning untagged
+        # images would dereference the manifest lists and break pulls.
+        prune-untagged: false
