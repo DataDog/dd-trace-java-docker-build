@@ -49,7 +49,11 @@ jobs:
           # Collect all image references from COPY --from= and FROM directives
           mapfile -t ALL_REFS < <({
             sed -n 's/.*--from=\([^ ]*\).*/\1/p' Dockerfile
-            awk '/^FROM/{print $2}' Dockerfile
+            awk '/^FROM/ {
+              for (i = 2; i <= NF; i++) {
+                if ($i !~ /^--/) { print $i; break }
+              }
+            }' Dockerfile
           })
 
           # Filter to only external images

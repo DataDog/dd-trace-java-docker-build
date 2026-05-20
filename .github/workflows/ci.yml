@@ -1,13 +1,18 @@
 name: "Build"
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
+  schedule:
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build_amd64:
