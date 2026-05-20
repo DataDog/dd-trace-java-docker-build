@@ -4,6 +4,12 @@ on:
     # Quarterly schedule, roughly aligned with JDK CPU
     - cron: '0 0 30 1,4,7,10 *'
   workflow_dispatch:
+    inputs:
+      skip_cooldown:
+        description: 'Skip the 48h external dependency cooldown check'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   tag-images:
@@ -15,11 +21,79 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - name: Install crane
+        run: |
+          CRANE_VERSION="0.21.5"
+          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz" -o crane.tar.gz
+          tar -xzf crane.tar.gz crane
+          sudo mv crane /usr/local/bin/crane
+          rm crane.tar.gz
       - name: Login to ghcr.io
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # 4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify external dependency 48h cooldown period
+        if: ${{ inputs.skip_cooldown != true }}
+        run: |
+          COOLDOWN_HOURS=48
+          COOLDOWN_SECONDS=$((COOLDOWN_HOURS * 3600))
+          NOW_EPOCH=$(date +%s)
+
+          # Collect local build stage names from the Dockerfile
+          mapfile -t LOCAL_STAGES < <(grep -i ' AS ' Dockerfile | sed 's/.* [Aa][Ss] //' | awk '{print $1}' | sort -u)
+
+          # Collect all image references from COPY --from= and FROM directives
+          mapfile -t ALL_REFS < <({
+            sed -n 's/.*--from=\([^ ]*\).*/\1/p' Dockerfile
+            awk '/^FROM/{print $2}' Dockerfile
+          })
+
+          # Filter to only external images
+          EXTERNAL_IMAGES=()
+          for ref in "${ALL_REFS[@]}"; do
+            [[ "$ref" == "scratch" ]] && continue
+            [[ "$ref" == *'${'* ]] && continue
+            is_local=false
+            for stage in "${LOCAL_STAGES[@]}"; do
+              [[ "$ref" == "$stage" ]] && { is_local=true; break; }
+            done
+            $is_local && continue
+            EXTERNAL_IMAGES+=("$ref")
+          done
+
+          echo "Checking ${#EXTERNAL_IMAGES[@]} external dependencies for ${COOLDOWN_HOURS}h cooldown..."
+          FAILED=false
+          for image in "${EXTERNAL_IMAGES[@]}"; do
+            echo "---"
+            echo "Checking: ${image}"
+            IMAGE_CREATED=$(crane config "${image}" | jq -r '.created // empty')
+            if [[ -z "$IMAGE_CREATED" ]]; then
+              echo "::error::Could not determine creation time for ${image}"
+              FAILED=true
+              continue
+            fi
+            IMAGE_EPOCH=$(date -d "$IMAGE_CREATED" +%s) || {
+              echo "::error::Could not parse creation time '${IMAGE_CREATED}' for ${image}"
+              FAILED=true
+              continue
+            }
+            AGE_SECONDS=$((NOW_EPOCH - IMAGE_EPOCH))
+            AGE_HOURS=$((AGE_SECONDS / 3600))
+            if [[ $AGE_SECONDS -lt $COOLDOWN_SECONDS ]]; then
+              REMAINING_HOURS=$(( (COOLDOWN_SECONDS - AGE_SECONDS) / 3600 + 1 ))
+              echo "::error::${image} is only ${AGE_HOURS}h old (created ${IMAGE_CREATED}). Cooldown requires ${COOLDOWN_HOURS}h. Try again in ~${REMAINING_HOURS}h."
+              FAILED=true
+            else
+              echo "OK: ${image} is ${AGE_HOURS}h old (created ${IMAGE_CREATED})"
+            fi
+          done
+
+          if $FAILED; then
+            echo "::error::One or more external dependencies have not met the ${COOLDOWN_HOURS}h cooldown period."
+            exit 1
+          fi
+          echo "All external dependencies have met the ${COOLDOWN_HOURS}h cooldown."
       - name: Tag images
         run: ./build --tag
