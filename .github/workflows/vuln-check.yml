@@ -29,20 +29,42 @@ jobs:
         with:
           docker-images: false # Do not remove locally built images (including trivy scanner)
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (amd64)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: 'ghcr.io/datadog/dd-trace-java-docker-build:latest'
           format: 'sarif'
-          output: 'trivy-results.sarif'
+          output: 'trivy-results-amd64.sarif'
           severity: 'CRITICAL,HIGH'
           limit-severities-for-sarif: true
         env:
           TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
           TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db
+          TRIVY_PLATFORM: linux/amd64
 
-      - name: Upload Trivy scan results to GitHub Security tab
+      - name: Upload amd64 Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: 'trivy-results-amd64.sarif'
+          category: trivy-amd64
+
+      - name: Run Trivy vulnerability scanner (arm64)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: 'ghcr.io/datadog/dd-trace-java-docker-build:latest'
+          format: 'sarif'
+          output: 'trivy-results-arm64.sarif'
+          severity: 'CRITICAL,HIGH'
+          limit-severities-for-sarif: true
+        env:
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
+          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db
+          TRIVY_PLATFORM: linux/arm64
+
+      - name: Upload arm64 Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-arm64.sarif'
+          category: trivy-arm64
