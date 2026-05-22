@@ -12,7 +12,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
   build_amd64:
@@ -161,7 +161,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (arm64)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: '${{ needs.build_amd64.outputs.latest_image_tag }}'
+          image-ref: '${{ needs.build_arm64.outputs.latest_image_tag }}'
           format: 'sarif'
           output: 'trivy-results-arm64.sarif'
           severity: 'CRITICAL,HIGH'

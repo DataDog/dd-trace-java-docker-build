@@ -332,7 +332,9 @@ function do_merge() {
 # copying the manifest list (preserves both architectures).
 function do_tag() {
     local variant src dst
-    TAG_PREFIX=
+function do_tag() {
+    local variant src dst
+    for variant in base latest "${BASE_VARIANTS[@]}" "${ALL_VARIANTS[@]}"; do
     for variant in base latest "${BASE_VARIANTS[@]}" "${ALL_VARIANTS[@]}"; do
         variant="${variant,,}"
         src="${IMAGE_NAME}:${variant}"
