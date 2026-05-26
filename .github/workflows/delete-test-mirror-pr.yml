@@ -60,7 +60,6 @@ jobs:
             exit 1
           fi
           git commit -m "chore: Remove dd-trace-java-docker-build test images for PR #${PR_NUMBER}"
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
         working-directory: images
 
       - name: Push changes
@@ -72,7 +71,6 @@ jobs:
           head-sha: "${{ steps.images-head.outputs.sha }}"
           create-branch: true
           command: push
-          commits: "${{ steps.create-commit.outputs.commit }}"
           working-directory: images
 
       - name: Create pull request

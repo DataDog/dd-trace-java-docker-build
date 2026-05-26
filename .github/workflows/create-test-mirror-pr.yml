@@ -73,7 +73,6 @@ jobs:
           fi
           git commit -m "chore: Update dd-trace-java-docker-build test image digests for PR #${PR_NUMBER}"
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
         working-directory: images
 
       - name: Push changes
@@ -86,7 +85,6 @@ jobs:
           head-sha: "${{ steps.images-head.outputs.sha }}"
           create-branch: true
           command: push
-          commits: "${{ steps.create-commit.outputs.commit }}"
           working-directory: images
 
       - name: Create pull request
