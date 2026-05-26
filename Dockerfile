@@ -102,13 +102,11 @@ RUN <<-EOT
 		/usr/lib/jvm/graalvm*/lib/installer
 EOT
 
-FROM --platform=linux/amd64 azul/zulu-openjdk:7 AS zulu7-amd64
-FROM --platform=linux/amd64 ibmjava:8-sdk AS ibm8-amd64
-
 FROM all-jdk-common AS all-jdk-arm64
 
+FROM --platform=linux/amd64 azul/zulu-openjdk:7 AS zulu7-amd64
+FROM --platform=linux/amd64 ibmjava:8-sdk AS ibm8-amd64
 FROM all-jdk-common AS all-jdk-amd64
-
 COPY --from=zulu7-amd64 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=ibm8-amd64 /opt/ibm/java /usr/lib/jvm/ibm8
 
