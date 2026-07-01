@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-readonly CI_VARIANTS=(base 7 8 11 17 21 25 tip zulu8 zulu11 oracle8 ibm8 semeru8 semeru11 semeru17 graalvm17 graalvm21 graalvm25)
+readonly CI_VARIANTS=(base 7 8 11 17 21 25 27 tip zulu8 zulu11 oracle8 ibm8 semeru8 semeru11 semeru17 graalvm17 graalvm21 graalvm25)
 
 # update_digest TAG DIGEST FILE
 # Finds the line "source: ...:TAG" and updates the digest on the following line.
