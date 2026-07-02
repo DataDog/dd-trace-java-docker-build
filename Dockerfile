@@ -129,6 +129,7 @@ COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
 COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 COPY --from=all-jdk /usr/lib/jvm/25 /usr/lib/jvm/25
+# Java 27 TODO: remove following two lines after GA
 COPY --from=all-jdk /usr/lib/jvm/26 /usr/lib/jvm/26
 COPY --from=all-jdk /usr/lib/jvm/27 /usr/lib/jvm/27
 COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION}
