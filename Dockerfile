@@ -60,7 +60,7 @@ COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
-# Java 27 TODO: remove 26 and update 27 images after GA
+# Java 27 TODO: remove following two lines after GA
 COPY --from=eclipse-temurin:26-jdk-noble /opt/java/openjdk /usr/lib/jvm/26
 COPY --from=openjdk:27-ea-jdk-bookworm /usr/local/openjdk-27 /usr/lib/jvm/27
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
