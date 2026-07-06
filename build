@@ -210,8 +210,9 @@ function do_inner_test() {
     "$JAVA_17_HOME/bin/java" -version
     "$JAVA_21_HOME/bin/java" -version
     "$JAVA_25_HOME/bin/java" -version
-    "$JAVA_26_HOME/bin/java" -version # Java 27 TODO: delete after GA
-    "$JAVA_27_HOME/bin/java" -version # Java 27 TODO: delete after GA
+    # Java 27 TODO: remove following two lines after GA
+    "$JAVA_26_HOME/bin/java" -version
+    "$JAVA_27_HOME/bin/java" -version
     "${!java_latest_home}/bin/java" -version
     if [[ $variant != base && $variant != latest ]]; then
         if [[ $variant == "tip" ]]; then
