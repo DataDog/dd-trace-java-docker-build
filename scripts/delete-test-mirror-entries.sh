@@ -12,7 +12,8 @@ set -euo pipefail
 
 readonly SOURCE_PREFIX="ghcr.io/datadog/dd-trace-java-docker-build"
 readonly DEST_REPO="dd-trace-java-docker-build"
-readonly CI_VARIANTS=(base 7 8 11 17 21 25 tip zulu8 zulu11 oracle8 ibm8 semeru8 semeru11 semeru17 graalvm17 graalvm21 graalvm25)
+# Java 27 TODO: move tip to 27 after GA
+readonly CI_VARIANTS=(base 7 8 11 17 21 25 27 tip zulu8 zulu11 oracle8 ibm8 semeru8 semeru11 semeru17 graalvm17 graalvm21 graalvm25)
 
 if ! [[ "${PR_NUMBER}" =~ ^[0-9]+$ ]]; then
   echo "::error::PR_NUMBER must be numeric (got: '${PR_NUMBER}')" >&2

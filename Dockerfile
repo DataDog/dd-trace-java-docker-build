@@ -60,7 +60,9 @@ COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
 COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
+# Java 27 TODO: remove following two lines after GA
 COPY --from=eclipse-temurin:26-jdk-noble /opt/java/openjdk /usr/lib/jvm/26
+COPY --from=openjdk:27-ea-jdk-bookworm /usr/local/openjdk-27 /usr/lib/jvm/27
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
@@ -127,7 +129,9 @@ COPY --from=all-jdk /usr/lib/jvm/11 /usr/lib/jvm/11
 COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 COPY --from=all-jdk /usr/lib/jvm/25 /usr/lib/jvm/25
+# Java 27 TODO: remove following two lines after GA
 COPY --from=all-jdk /usr/lib/jvm/26 /usr/lib/jvm/26
+COPY --from=all-jdk /usr/lib/jvm/27 /usr/lib/jvm/27
 COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION}
 
 # Base image with minimum requirements to build the project.
@@ -233,7 +237,9 @@ ENV JAVA_11_HOME=/usr/lib/jvm/11
 ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_21_HOME=/usr/lib/jvm/21
 ENV JAVA_25_HOME=/usr/lib/jvm/25
+# Java 27 TODO: remove following two lines after GA
 ENV JAVA_26_HOME=/usr/lib/jvm/26
+ENV JAVA_27_HOME=/usr/lib/jvm/27
 ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
 
 ENV JAVA_HOME=${JAVA_8_HOME}
