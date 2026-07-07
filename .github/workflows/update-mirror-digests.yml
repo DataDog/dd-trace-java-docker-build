@@ -69,7 +69,7 @@ jobs:
           echo "::error::Timeout after 30 minutes: ci-base digest did not change from existing mirror"
           exit 1
 
-      - name: Resolve digests and update mirror.lock.yaml files
+      - name: Resolve digests and update mirror files
         run: bash "${GITHUB_WORKSPACE}/dd-trace-java-docker-build/scripts/update-ci-image-digests.sh"
         working-directory: images
 
@@ -82,7 +82,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mirror.lock.yaml
+          git add mirror.yaml mirror.lock.yaml
           if git diff --cached --quiet; then
             echo "No changes detected in mirror files; skipping commit."
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
