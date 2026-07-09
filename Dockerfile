@@ -10,6 +10,7 @@ ARG LATEST_VERSION
 ARG ALL_JDK_STAGE=all-jdk-amd64
 ARG FULL_STAGE=full-amd64
 FROM eclipse-temurin:${LATEST_VERSION}-jdk-noble AS temurin-latest
+FROM registry.ddbuild.io/images/datadog-ca-certs:standard AS datadog-ca-certs
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM ubuntu:24.04 AS all-jdk-common
@@ -51,6 +52,14 @@ RUN <<-EOT
 
 	sudo apt-get clean
 	sudo rm -rf /var/lib/apt/lists/*
+EOT
+
+# Stage the Datadog CA certs and import script, and trust the certs at the OS level.
+COPY --from=datadog-ca-certs /certs/datadog /usr/local/share/ca-certificates/datadog
+COPY scripts/import-datadog-certs.sh /usr/local/bin/import-datadog-certs.sh
+RUN <<-EOT
+	set -eux
+	sudo update-ca-certificates
 EOT
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
@@ -95,6 +104,9 @@ RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
 	unset ORACLE_JAVA8_TOKEN
 EOT
 
+# Import the Datadog CA certs into every JDK's own cacerts truststore.
+RUN sudo /usr/local/bin/import-datadog-certs.sh /usr/lib/jvm
+
 # Remove cruft from JDKs that is not used in the build process.
 RUN <<-EOT
 	sudo rm -rf \
@@ -111,6 +123,9 @@ FROM --platform=linux/amd64 ibmjava:8-sdk AS ibm8-amd64
 FROM all-jdk-common AS all-jdk-amd64
 COPY --from=zulu7-amd64 /usr/lib/jvm/zulu7 /usr/lib/jvm/7
 COPY --from=ibm8-amd64 /opt/ibm/java /usr/lib/jvm/ibm8
+
+# Import the Datadog CA certs into the amd64-only ibm8 truststore.
+RUN sudo /usr/local/bin/import-datadog-certs.sh /usr/lib/jvm/ibm8
 
 RUN <<-EOT
 	sudo rm -rf \
