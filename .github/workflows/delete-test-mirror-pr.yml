@@ -63,7 +63,7 @@ jobs:
         working-directory: images
 
       - name: Push changes
-        uses: DataDog/commit-headless@567f7eedac58750aa573f48fd60cfe478abc65bd # action/v3.3.0
+        uses: DataDog/commit-headless@2801f6e08acb3a69b6c4d7b0d5deef27c1a15bc7 # action/v3.3.1
         with:
           target: DataDog/images
           token: "${{ steps.octo-sts.outputs.token }}"
