@@ -7,10 +7,9 @@ This repository holds the original Docker images for continuous integration jobs
 Pre-built images are available in the [GitHub Container Registry](https://github.com/DataDog/dd-trace-java-docker-build/pkgs/container/dd-trace-java-docker-build).
 
 Image variants are available on a per JDK basis:
-- The `base` variant and its aliases — `8`, `11`, `17`, `21`, `25`, and `tip` — contain the base Eclipse Temurin JDK 8, 11, 17, 21, 25, and tip JDK version releases.
+- The `base` variant and its aliases — `8`, `11`, `17`, `21`, `25`, and `tip` — contain the base Eclipse Temurin JDK 8, 11, 17, 21, 25, and 27 releases. The `tip` alias currently refers to JDK 27.
 - The `zulu8`, `zulu11`, `oracle8`, `ibm8`, `semeru8`, `semeru11`, `semeru17`, `graalvm17`, `graalvm21`, and `graalvm25` variants each contain the base JDKs in addition to the specific JDK from their name.
 - The `latest` variant contains the base JDKs and all of the specific JDKs above.
-- JDK `27` RC image is currently being tested. <!-- Java 27 TODO: remove this line after GA -->
 
 All variants are published as multi-arch manifests covering `linux/amd64` and `linux/arm64`, so the same tag (e.g. `base`, `zulu8`, `tip`) resolves to the correct image for the host architecture.
 The `7` and `ibm8` variants are amd64-only because the upstream JDK images are not available for arm64;
