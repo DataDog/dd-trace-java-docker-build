@@ -12,7 +12,7 @@ ARG FULL_STAGE=full-amd64
 FROM eclipse-temurin:${LATEST_VERSION}-jdk-resolute AS temurin-latest
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
-FROM ubuntu:24.04 AS all-jdk-common
+FROM ubuntu:resolute AS all-jdk-common
 ARG LATEST_VERSION
 ARG TARGETARCH
 
@@ -55,19 +55,19 @@ EOT
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-COPY --from=eclipse-temurin:8-jdk-noble /opt/java/openjdk /usr/lib/jvm/8
-COPY --from=eclipse-temurin:11-jdk-noble /opt/java/openjdk /usr/lib/jvm/11
-COPY --from=eclipse-temurin:17-jdk-noble /opt/java/openjdk /usr/lib/jvm/17
-COPY --from=eclipse-temurin:21-jdk-noble /opt/java/openjdk /usr/lib/jvm/21
-COPY --from=eclipse-temurin:25-jdk-noble /opt/java/openjdk /usr/lib/jvm/25
+COPY --from=eclipse-temurin:8-jdk-resolute /opt/java/openjdk /usr/lib/jvm/8
+COPY --from=eclipse-temurin:11-jdk-resolute /opt/java/openjdk /usr/lib/jvm/11
+COPY --from=eclipse-temurin:17-jdk-resolute /opt/java/openjdk /usr/lib/jvm/17
+COPY --from=eclipse-temurin:21-jdk-resolute /opt/java/openjdk /usr/lib/jvm/21
+COPY --from=eclipse-temurin:25-jdk-resolute /opt/java/openjdk /usr/lib/jvm/25
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
 
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
 
-COPY --from=ibm-semeru-runtimes:open-8-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru8
-COPY --from=ibm-semeru-runtimes:open-11-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru11
-COPY --from=ibm-semeru-runtimes:open-17-jdk-noble /opt/java/openjdk /usr/lib/jvm/semeru17
+COPY --from=ibm-semeru-runtimes:open-8-jdk-resolute /opt/java/openjdk /usr/lib/jvm/semeru8
+COPY --from=ibm-semeru-runtimes:open-11-jdk-resolute /opt/java/openjdk /usr/lib/jvm/semeru11
+COPY --from=ibm-semeru-runtimes:open-17-jdk-resolute /opt/java/openjdk /usr/lib/jvm/semeru17
 
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
@@ -130,7 +130,7 @@ COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION
 
 # Base image with minimum requirements to build the project.
 # Based on the latest Ubuntu LTS image.
-FROM ubuntu:24.04 AS base
+FROM ubuntu:resolute AS base
 ARG LATEST_VERSION
 ARG DATADOG_CI_VERSION=5.17.0
 ARG TARGETARCH
