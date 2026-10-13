@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # delete-test-mirror-entries.sh — remove {PR_NUMBER}_merge-* test image entries
-# from mirror.yaml and mirror.lock.yaml in the DataDog/images repo.
+# from mirror.yaml and mirror.lock.yaml in the ddoghq/images repo.
 #
 # This script is called in the delete-test-mirror-pr GitHub workflow.
-# It must be run from the root of DataDog/images.
+# It must be run from the root of ddoghq/images.
 #
 # Required env var:
 #   PR_NUMBER  — pull request number in dd-trace-java-docker-build (numeric)

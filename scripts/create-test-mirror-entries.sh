@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # create-test-mirror-entries.sh — add or update {PR_NUMBER}_merge-* test image entries
-# in mirror.yaml and mirror.lock.yaml files in the DataDog/images repo.
+# in mirror.yaml and mirror.lock.yaml files in the ddoghq/images repo.
 #
 # This script is called in the create-test-mirror-pr Github workflow.
-# It must be run from the root of DataDog/images and requires crane to be installed.
+# It must be run from the root of ddoghq/images and requires crane to be installed.
 #
 # Required env var:
 #   PR_NUMBER  — pull request number in dd-trace-java-docker-build (numeric)
