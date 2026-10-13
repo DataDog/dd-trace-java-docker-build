@@ -17,7 +17,7 @@ jobs:
       - uses: DataDog/dd-octo-sts-action@96a25462dbcb10ebf0bfd6e2ccc917d2ab235b9a # v1.0.4
         id: octo-sts
         with:
-          scope: DataDog/images
+          scope: ddoghq/images
           policy: dd-trace-java-docker-build.update-mirror
 
       - name: Checkout DataDog/dd-trace-java-docker-build
@@ -25,10 +25,10 @@ jobs:
         with:
           path: dd-trace-java-docker-build
 
-      - name: Checkout DataDog/images
+      - name: Checkout ddoghq/images
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: DataDog/images
+          repository: ddoghq/images
           token: ${{ steps.octo-sts.outputs.token }}
           path: images
 
@@ -65,7 +65,7 @@ jobs:
       - name: Push changes
         uses: DataDog/commit-headless@2801f6e08acb3a69b6c4d7b0d5deef27c1a15bc7 # action/v3.3.1
         with:
-          target: DataDog/images
+          target: ddoghq/images
           token: "${{ steps.octo-sts.outputs.token }}"
           branch: "${{ steps.define-branch.outputs.branch }}"
           head-sha: "${{ steps.images-head.outputs.sha }}"
@@ -79,7 +79,7 @@ jobs:
           PR_NUMBER: ${{ github.event.inputs.pr_number }}
         run: |
           gh pr create \
-            --repo DataDog/images \
+            --repo ddoghq/images \
             --title "Remove dd-trace-java-docker-build test images for PR #${PR_NUMBER}" \
             --base master \
             --head "${{ steps.define-branch.outputs.branch }}" \

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# update-ci-image-digests.sh - add/update ci-* image mirror entries in the DataDog/images repo.
+# update-ci-image-digests.sh - add/update ci-* image mirror entries in the ddoghq/images repo.
 #
 # This script is called in the update-mirror-digests Github workflow.
-# It must be run from the root of DataDog/images and requires crane to be installed.
+# It must be run from the root of ddoghq/images and requires crane to be installed.
 
 set -euo pipefail
 
