@@ -9,7 +9,7 @@
 ARG LATEST_VERSION
 ARG ALL_JDK_STAGE=all-jdk-amd64
 ARG FULL_STAGE=full-amd64
-FROM eclipse-temurin:${LATEST_VERSION}-jdk-resolute AS temurin-latest
+FROM amazoncorretto:${LATEST_VERSION} AS corretto-latest
 
 # Intermediate image used to prune cruft from JDKs and squash them all.
 FROM ubuntu:resolute AS all-jdk-common
@@ -55,12 +55,12 @@ EOT
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-COPY --from=eclipse-temurin:8-jdk-resolute /opt/java/openjdk /usr/lib/jvm/8
-COPY --from=eclipse-temurin:11-jdk-resolute /opt/java/openjdk /usr/lib/jvm/11
-COPY --from=eclipse-temurin:17-jdk-resolute /opt/java/openjdk /usr/lib/jvm/17
-COPY --from=eclipse-temurin:21-jdk-resolute /opt/java/openjdk /usr/lib/jvm/21
-COPY --from=eclipse-temurin:25-jdk-resolute /opt/java/openjdk /usr/lib/jvm/25
-COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
+COPY --from=amazoncorretto:8 /usr/lib/jvm/java-1.8.0-amazon-corretto /usr/lib/jvm/8
+COPY --from=amazoncorretto:11 /usr/lib/jvm/java-11-amazon-corretto /usr/lib/jvm/11
+COPY --from=amazoncorretto:17 /usr/lib/jvm/java-17-amazon-corretto /usr/lib/jvm/17
+COPY --from=amazoncorretto:21 /usr/lib/jvm/java-21-amazon-corretto /usr/lib/jvm/21
+COPY --from=amazoncorretto:25 /usr/lib/jvm/java-25-amazon-corretto /usr/lib/jvm/25
+COPY --from=corretto-latest /usr/lib/jvm/java-${LATEST_VERSION}-amazon-corretto /usr/lib/jvm/${LATEST_VERSION}
 # Java 28 TODO: remove following line after GA
 COPY --from=openjdk:28-ea-jdk-bookworm /usr/local/openjdk-28 /usr/lib/jvm/28
 
@@ -73,7 +73,7 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-resolute /opt/java/openjdk /usr/lib/
 
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
-COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
+COPY --from=ghcr.io/graalvm/native-image-community:25i5-25.0.5.0.3-ol10 /usr/lib64/graalvm/graalvm-community-java25i5 /usr/lib/jvm/graalvm25
 
 # See:
 # 1. Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
@@ -185,6 +185,9 @@ EOT
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 COPY --from=default-jdk /usr/lib/jvm /usr/lib/jvm
+
+# Corretto's truststore symlinks point outside the copied JDK directories.
+COPY --from=corretto-latest /etc/pki/ca-trust/extracted/java/cacerts /etc/pki/java/cacerts
 
 # Install the following tools
 # - awscli: AWS CLI
