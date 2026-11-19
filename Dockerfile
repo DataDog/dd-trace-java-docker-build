@@ -61,6 +61,8 @@ COPY --from=eclipse-temurin:17-jdk-resolute /opt/java/openjdk /usr/lib/jvm/17
 COPY --from=eclipse-temurin:21-jdk-resolute /opt/java/openjdk /usr/lib/jvm/21
 COPY --from=eclipse-temurin:25-jdk-resolute /opt/java/openjdk /usr/lib/jvm/25
 COPY --from=temurin-latest /opt/java/openjdk /usr/lib/jvm/${LATEST_VERSION}
+# Java 28 TODO: remove following line after GA
+COPY --from=openjdk:28-ea-jdk-bookworm /usr/local/openjdk-28 /usr/lib/jvm/28
 
 COPY --from=azul/zulu-openjdk:8 /usr/lib/jvm/zulu8 /usr/lib/jvm/zulu8
 COPY --from=azul/zulu-openjdk:11 /usr/lib/jvm/zulu11 /usr/lib/jvm/zulu11
@@ -127,6 +129,8 @@ COPY --from=all-jdk /usr/lib/jvm/17 /usr/lib/jvm/17
 COPY --from=all-jdk /usr/lib/jvm/21 /usr/lib/jvm/21
 COPY --from=all-jdk /usr/lib/jvm/25 /usr/lib/jvm/25
 COPY --from=all-jdk /usr/lib/jvm/${LATEST_VERSION} /usr/lib/jvm/${LATEST_VERSION}
+# Java 28 TODO: remove following line after GA
+COPY --from=all-jdk /usr/lib/jvm/28 /usr/lib/jvm/28
 
 # Base image with minimum requirements to build the project.
 # Based on the latest Ubuntu LTS image.
@@ -232,6 +236,8 @@ ENV JAVA_17_HOME=/usr/lib/jvm/17
 ENV JAVA_21_HOME=/usr/lib/jvm/21
 ENV JAVA_25_HOME=/usr/lib/jvm/25
 ENV JAVA_${LATEST_VERSION}_HOME=/usr/lib/jvm/${LATEST_VERSION}
+# Java 28 TODO: remove following line after GA
+ENV JAVA_28_HOME=/usr/lib/jvm/28
 
 ENV JAVA_HOME=${JAVA_8_HOME}
 ENV PATH=${JAVA_HOME}/bin:${PATH}
