@@ -39,6 +39,7 @@ jobs:
       - name: Free Disk Space (Ubuntu) # Reclaim disk space for build
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
+          swap-storage: true
           docker-images: false # Do not remove locally built images (including trivy scanner)
       - name: Build images
         id: build
@@ -85,6 +86,7 @@ jobs:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
+          swap-storage: true
           docker-images: false
       - name: Build arm64 images
         id: build

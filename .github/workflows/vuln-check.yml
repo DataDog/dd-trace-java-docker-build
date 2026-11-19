@@ -27,6 +27,7 @@ jobs:
       - name: Free Disk Space (Ubuntu) # Reclaim disk space for scan
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
+          swap-storage: true
           docker-images: false # Do not remove locally built images (including trivy scanner)
 
       - name: Run Trivy vulnerability scanner (amd64)
