@@ -3,7 +3,7 @@ set -eu
 
 readonly IMAGE_NAME="ghcr.io/datadog/dd-trace-java-docker-build"
 
-readonly BASE_VARIANTS=(8 11 17 21 25 tip)
+readonly BASE_VARIANTS=(8 11 17 21 25 28 tip) # Java 28 TODO: move tip to 28 after GA
 
 readonly ALL_VARIANTS=(
     7
@@ -22,7 +22,7 @@ readonly ALL_VARIANTS=(
 # Variants whose upstream JDK images are not published for arm64.
 readonly AMD64_ONLY_VARIANTS=(7 ibm8)
 
-readonly LATEST_VERSION="27"
+readonly LATEST_VERSION="27" # Java 28 TODO: update to 28 after GA
 readonly PLATFORM="${PLATFORM:-linux/amd64}"
 readonly DIGESTS_DIR="${DIGESTS_DIR:-./digests}"
 
@@ -211,6 +211,8 @@ function do_inner_test() {
     "$JAVA_21_HOME/bin/java" -version
     "$JAVA_25_HOME/bin/java" -version
     "${!java_latest_home}/bin/java" -version
+    # Java 28 TODO: remove following line after GA
+    "$JAVA_28_HOME/bin/java" -version
     if [[ $variant != base && $variant != latest ]]; then
         if [[ $variant == "tip" ]]; then
             variant_lower="${LATEST_VERSION}"
