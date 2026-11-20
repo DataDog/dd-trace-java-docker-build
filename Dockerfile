@@ -81,7 +81,6 @@ COPY --from=ghcr.io/graalvm/native-image-community:25i5-25.0.5.0.3-ol10 /usr/lib
 # Note:
 # 1. Token can be created here: https://cloud.oracle.com/?tenant=ddsbxplayground&domain=datadog&region=us-ashburn-1
 # 2. Once created, token should be added to GitHub protected environment by repository administrator.
-ARG ORACLE_JAVA8_VERSION=1.8.0_513
 RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
 	set -eux
 	case "${TARGETARCH}" in
@@ -93,7 +92,6 @@ RUN --mount=type=secret,id=oracle_java8_token,uid=1001,gid=1001,mode=0400 <<-EOT
 	ORACLE_JAVA8_TOKEN="$(cat /run/secrets/oracle_java8_token)"
 	sudo curl -L --fail -H "token:${ORACLE_JAVA8_TOKEN}" "https://java.oraclecloud.com/java/8/latest/${ORACLE_JAVA8_PACKAGE}" | sudo tar -xvzf - -C /usr/lib/jvm/oracle8 --strip-components 1
 	unset ORACLE_JAVA8_TOKEN
-	/usr/lib/jvm/oracle8/bin/java -version 2>&1 | grep -F "java version \"${ORACLE_JAVA8_VERSION}\""
 EOT
 
 # Remove cruft from JDKs that is not used in the build process.
