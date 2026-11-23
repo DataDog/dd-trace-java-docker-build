@@ -73,7 +73,7 @@ COPY --from=ibm-semeru-runtimes:open-17-jdk-resolute /opt/java/openjdk /usr/lib/
 
 COPY --from=ghcr.io/graalvm/native-image-community:17-ol9 /usr/lib64/graalvm/graalvm-community-java17 /usr/lib/jvm/graalvm17
 COPY --from=ghcr.io/graalvm/native-image-community:21-ol9 /usr/lib64/graalvm/graalvm-community-java21 /usr/lib/jvm/graalvm21
-COPY --from=ghcr.io/graalvm/native-image-community:25i5-25.0.5.0.3-ol10 /usr/lib64/graalvm/graalvm-community-java25i5 /usr/lib/jvm/graalvm25
+COPY --from=ghcr.io/graalvm/native-image-community:25-ol10 /usr/lib64/graalvm/graalvm-community-java25 /usr/lib/jvm/graalvm25
 
 # See:
 # 1. Oracle docimention about script friendly download: https://docs.oracle.com/en-us/iaas/jms/doc/script-friendly-download.html
